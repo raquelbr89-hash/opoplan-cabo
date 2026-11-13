@@ -1,0 +1,1278 @@
+:root{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#203329;background:#f5f7f3}*{box-sizing:border-box}body{margin:0}.shell{display:flex;min-height:100vh}aside{width:245px;background:#103c2b;color:#e9f5ed;padding:25px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}.brand{display:flex;align-items:center;gap:12px;padding:8px 10px 26px}.brand img{width:49px;height:49px;border-radius:12px;object-fit:cover}.brand strong{display:block;font-size:21px}.brand small{color:#b6d2c2}.sidefoot{margin-top:auto;font-size:12px;color:#abc8b8;padding:14px}nav{display:grid;gap:5px}nav button{width:100%;text-align:left;border:0;border-radius:11px;background:transparent;color:#d5e6dc;padding:13px;font-size:15px;cursor:pointer}nav button.active,nav button:hover{background:#2c6248;color:white}main{width:min(1100px,100%);margin:auto;padding:34px 38px 70px;align-self:flex-start}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}header small{color:#65836f;letter-spacing:2px;font-size:11px;font-weight:750}h1{font-size:34px;margin:7px 0 0}h2{font-size:20px;margin:0 0 17px}h3{margin:0 0 8px}.tag,.pill{display:inline-block;background:#e6eee8;color:#24533a;border-radius:40px;padding:8px 12px;font-size:13px;font-weight:650}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:white;border:1px solid #e0e9e1;border-radius:17px;padding:22px;box-shadow:0 3px 15px #133c2310;margin-bottom:16px}.metric{font-size:32px;font-weight:780;color:#174a33}.muted{color:#718477;font-size:14px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.stack{display:grid;gap:12px}.topic{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid #e8eee9;padding:13px 0}.topic:last-child{border-bottom:0}.topic button.link{background:none;border:0;color:#195b3c;font-weight:700;text-align:left;cursor:pointer;font-size:15px}button,.btn{cursor:pointer;font:inherit}button.primary,.btn{border:0;border-radius:10px;background:#18573b;color:white;padding:11px 16px;font-weight:700}button.secondary{border:1px solid #c9dacd;background:#f7faf7;color:#23573d;padding:10px 14px;border-radius:10px}button.danger{background:#fff2f2;color:#a32e2e;border:1px solid #f2cccc;border-radius:9px;padding:8px}input,textarea,select{font:inherit;width:100%;padding:11px;border:1px solid #cbd8ce;border-radius:10px;background:white;color:#203329}textarea{min-height:90px;resize:vertical}label{display:block;font-size:13px;font-weight:650;margin:8px 0 5px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.progress{height:9px;background:#e4eee6;border-radius:30px;overflow:hidden}.progress span{display:block;height:100%;background:#31845b}.hero{background:linear-gradient(110deg,#153d2e,#28724e);color:white;padding:28px;border-radius:19px;margin-bottom:18px}.hero h2{font-size:27px}.hero p{color:#d8e9dd}.timer{font-size:65px;font-weight:750;letter-spacing:2px;text-align:center;margin:16px}.center{text-align:center}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.day{min-height:92px;padding:8px;border:1px solid #e1e9e2;background:white;border-radius:9px;text-align:left;cursor:pointer;overflow:hidden}.day.today{border:2px solid #33825b}.day.selected{background:#eaf6ed}.day small{display:block;color:#28583c;margin:3px 0;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.weekday{text-align:center;font-size:12px;color:#6a8070;padding:8px}.listline{padding:11px 0;border-bottom:1px solid #e9eee9}.listline:last-child{border:0}.flash{min-height:150px;display:grid;place-items:center;text-align:center;border:1px dashed #aac5b0;border-radius:13px;padding:20px;margin:14px 0;background:#f8fbf8}.bar{height:12px;border-radius:6px;background:#e8efe9;overflow:hidden}.bar span{display:block;height:100%;background:#347a57}.notice{padding:13px;border-radius:10px;background:#fff9e9;color:#69582b;margin-bottom:16px}#toast{position:fixed;bottom:22px;right:22px;background:#183f2e;color:white;border-radius:10px;padding:12px 16px;display:none;z-index:9}@media(max-width:780px){.shell{display:block}aside{width:100%;height:auto;position:static;padding:10px}.brand{padding:8px 6px}.brand img{width:36px;height:36px}.brand strong{font-size:18px}.sidefoot{display:none}nav{display:flex;overflow:auto;padding-bottom:7px}nav button{white-space:nowrap;width:auto;padding:10px}main{padding:22px 14px 90px}h1{font-size:28px}.grid{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}.card{padding:17px}.day{min-height:70px;padding:4px;font-size:12px}.day small{font-size:9px}.timer{font-size:52px}}@media(max-width:430px){.grid{grid-template-columns:1fr 1fr}.metric{font-size:26px}}
+
+/* OpoPlan Cabo v2: temario de tarjetas y calendario cromático */
+:root{--gold:#bb9651}body{background:#f7f7f2}aside{background:linear-gradient(165deg,#103c2b,#082b20)}.brand strong{letter-spacing:.3px}h1{color:#173c2b}.hero{background:linear-gradient(115deg,#103d2d,#226345)!important;border:1px solid #ba9a5b!important}.card{border-color:#e6e7db;box-shadow:0 5px 24px #1a39210c}.deck-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.deck-tile{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:10px;padding:18px;border:1px solid #dce6da;background:linear-gradient(145deg,#fff,#f7faf6);border-radius:15px;cursor:pointer;color:#203329;min-height:154px}.deck-tile:hover{border-color:#b99a58;box-shadow:0 6px 18px #204c2a18}.deck-num{background:#194b34;color:#fff;border-radius:9px;padding:6px 10px;font-weight:750}.deck-tile strong{font-size:15px}.deck-arrow{margin-top:auto;color:#8c6d36;font-weight:700;font-size:13px}.category-legend{display:flex;flex-wrap:wrap;gap:8px 15px;margin:0 0 17px}.legend-item{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#52665b}.legend-item i{display:block;width:11px;height:11px;border-radius:3px}.day{min-width:0;overflow:hidden}.calendar-chip{display:block!important;text-align:left;font-size:10px!important;line-height:1.25;border-radius:4px;padding:4px 5px!important;margin:3px 0!important;color:#24352b!important;background:color-mix(in srgb,var(--chip) 24%,white);border-left:4px solid var(--chip);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.study-chip{--chip:#25764f}.more-events{font-size:10px;color:#56685d}.event-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin:8px 0;background:color-mix(in srgb,var(--chip) 13%,white);border-left:5px solid var(--chip);border-radius:8px}.event-entry.study-entry{--chip:#25764f}.event-entry .muted{display:block;margin-top:4px}.event-entry .actions{flex-shrink:0}.category-editor{display:flex;align-items:center;gap:12px;border-bottom:1px solid #edf0e8;padding:10px 0}.category-editor span{flex:1}.category-editor input[type=color]{width:45px;height:34px;padding:2px;cursor:pointer}@media(max-width:700px){.deck-grid{grid-template-columns:1fr}.event-entry{flex-wrap:wrap}.calendar-chip{font-size:8px!important;padding:3px!important}.category-legend{gap:7px}}
+
+/* OpoPlan Cabo - mejora visual */
+:root {
+  --verde: #123d2c;
+  --oro: #b99654;
+  --rojo: #a72e30;
+}
+
+body {
+  background: #f5f5ef;
+}
+
+aside {
+  background: linear-gradient(165deg, #153f2e, #082b20);
+  border-right: 3px solid var(--oro);
+}
+
+.brand img {
+  border: 2px solid var(--oro);
+  box-shadow: 0 4px 16px #0003;
+}
+
+.brand strong {
+  font-size: 23px;
+}
+
+.brand small {
+  color: #e0d1aa;
+}
+
+nav button.active {
+  background: #ffffff20;
+  border-left: 3px solid #d5b576;
+}
+
+header {
+  position: relative;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e4d9;
+}
+
+header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--rojo) 0% 29%,
+    transparent 29% 35%,
+    var(--rojo) 35% 64%,
+    transparent 64% 70%,
+    var(--rojo) 70% 100%
+  );
+}
+
+h1, h2 {
+  color: var(--verde);
+}
+
+.tag, .pill {
+  background: #efe9d9;
+  color: #765b2e;
+  border: 1px solid #e1d4b6;
+}
+
+.card {
+  border: 1px solid #e1e5da;
+  border-radius: 19px;
+  box-shadow: 0 8px 24px #183d2610;
+}
+
+.hero {
+  background: linear-gradient(
+    120deg, #103a2b, #246c49
+  ) !important;
+  border: 1px solid var(--oro) !important;
+  border-radius: 21px;
+}
+
+.hero h2 {
+  color: white;
+}
+
+.metric {
+  color: #19593d;
+}
+
+button.primary, .btn {
+  background: #195c3e;
+  border-radius: 11px;
+}
+
+button.secondary {
+  border-color: #d6c5a4;
+  background: #fffdf7;
+}
+
+.deck-tile {
+  border-radius: 17px;
+  box-shadow: 0 3px 10px #193f2810;
+}
+
+.deck-tile:hover {
+  border-color: var(--oro);
+}
+
+.deck-num {
+  background: #195b3f;
+  border: 1px solid var(--oro);
+}
+
+.day {
+  border-radius: 11px;
+}
+
+.day.today {
+  border-color: var(--oro);
+}
+
+.flash {
+  background: #f8faf6;
+  border-bottom: 3px solid var(--oro);
+  border-radius: 16px;
+}
+
+@media (max-width: 780px) {
+  aside {
+    border-right: 0;
+    border-bottom: 3px solid var(--oro);
+  }
+}
+
+
+/* OpoPlan Cabo - diseño negro y antracita */
+
+:root {
+  --verde: #202329;
+  --oro: #c5a46a;
+  --rojo: #ae3036;
+}
+
+body {
+  background: #eceef0;
+  color: #202329;
+}
+
+aside {
+  background: linear-gradient(165deg, #101113, #292c31);
+  border-right: 3px solid #c5a46a;
+}
+
+.brand strong {
+  color: #ffffff;
+}
+
+.brand small {
+  color: #c5a46a;
+}
+
+nav button.active {
+  background: #ffffff18;
+  border-left-color: #c5a46a;
+}
+
+header::before {
+  width: 30px;
+  height: 24px;
+  background: linear-gradient(
+    90deg,
+    #ae3036 0 25%,
+    transparent 25% 37%,
+    #ae3036 37% 62%,
+    transparent 62% 74%,
+    #ae3036 74% 100%
+  );
+}
+
+h1, h2 {
+  color: #202329;
+}
+
+.card {
+  background: #ffffff;
+  border-color: #d9dce0;
+  box-shadow: 0 8px 24px #10111312;
+}
+
+.hero {
+  background: linear-gradient(
+    120deg, #111214, #30343a
+  ) !important;
+  border-color: #c5a46a !important;
+}
+
+.hero h2 {
+  color: #ffffff;
+}
+
+.metric {
+  color: #292c31;
+}
+
+button.primary, .btn {
+  background: #292c31;
+}
+
+button.secondary {
+  background: #f7f7f8;
+  border-color: #c5a46a;
+}
+
+.deck-tile:hover {
+  border-color: #c5a46a;
+}
+
+.deck-num {
+  background: #292c31;
+  border-color: #c5a46a;
+}
+
+.flash {
+  background: #f7f7f8;
+  border-bottom-color: #c5a46a;
+}
+
+@media (max-width: 780px) {
+  aside {
+    border-bottom-color: #c5a46a;
+  }
+}
+
+
+/* OpoPlan Cabo - prueba de modo oscuro */
+
+:root {
+  color-scheme: dark;
+  --verde: #292c32;
+  --oro: #c7a66d;
+  --rojo: #b3343a;
+}
+
+html, body {
+  background: #1b1d22 !important;
+  color: #e9eaf0 !important;
+}
+
+aside {
+  background: #111214 !important;
+  border-right-color: #c7a66d;
+}
+
+header {
+  background: #1b1d22 !important;
+  border-bottom-color: #393c43;
+}
+
+/* Tres rayas horizontales, una encima de otra */
+header::before {
+  width: 30px !important;
+  height: 27px !important;
+  top: 3px;
+  background: linear-gradient(
+    to bottom,
+    #b3343a 0 18%,
+    transparent 18% 39%,
+    #b3343a 39% 57%,
+    transparent 57% 78%,
+    #b3343a 78% 96%,
+    transparent 96% 100%
+  ) !important;
+}
+
+h1, h2, h3 {
+  color: #f4f4f6 !important;
+}
+
+.card, .deck-tile, .day, .flash {
+  background: #292c32 !important;
+  color: #e9eaf0 !important;
+  border-color: #41454c !important;
+}
+
+.hero {
+  background: linear-gradient(
+    120deg, #101113, #30343b
+  ) !important;
+  border-color: #c7a66d !important;
+}
+
+.hero h2 {
+  color: #ffffff !important;
+}
+
+.metric {
+  color: #e9eaf0 !important;
+}
+
+button.primary, .btn {
+  background: #393d44 !important;
+  color: #ffffff !important;
+}
+
+button.secondary {
+  background: #353940 !important;
+  color: #ffffff !important;
+  border-color: #c7a66d !important;
+}
+
+input, select, textarea {
+  background: #33363d !important;
+  color: #f4f4f6 !important;
+  border-color: #535861 !important;
+}
+
+.tag, .pill {
+  background: #39352c !important;
+  color: #e6cc98 !important;
+  border-color: #6a5838 !important;
+}
+
+.deck-num {
+  background: #393d44 !important;
+  color: #ffffff !important;
+}
+
+.day.today {
+  border-color: #c7a66d !important;
+}
+
+
+/* OpoPlan - diseño claro definitivo */
+
+:root {
+  color-scheme: light;
+  --verde: #292c32;
+  --oro: #c7a66d;
+  --rojo: #b3343a;
+}
+
+html, body {
+  background: #f0f1f3 !important;
+  color: #25282e !important;
+}
+
+aside {
+  background: #151619 !important;
+  border-right-color: #c7a66d !important;
+}
+
+header {
+  background: #f0f1f3 !important;
+  border-bottom-color: #d9dce1 !important;
+}
+
+/* Tres franjas rojas horizontales apiladas */
+header::before {
+  width: 30px !important;
+  height: 27px !important;
+  top: 3px;
+  background: linear-gradient(
+    to bottom,
+    #b3343a 0 18%,
+    transparent 18% 39%,
+    #b3343a 39% 57%,
+    transparent 57% 78%,
+    #b3343a 78% 96%,
+    transparent 96% 100%
+  ) !important;
+}
+
+h1, h2, h3 {
+  color: #25282e !important;
+}
+
+.card, .deck-tile, .day, .flash {
+  background: #ffffff !important;
+  color: #25282e !important;
+  border-color: #dfe1e5 !important;
+}
+
+.hero {
+  background: linear-gradient(
+    120deg, #151619, #353940
+  ) !important;
+  border-color: #c7a66d !important;
+  color: #ffffff !important;
+}
+
+.hero h2 {
+  color: #ffffff !important;
+}
+
+.metric {
+  color: #25282e !important;
+}
+
+button.primary, .btn {
+  background: #292c32 !important;
+  color: #ffffff !important;
+}
+
+button.secondary {
+  background: #f8f8f9 !important;
+  color: #292c32 !important;
+  border-color: #c7a66d !important;
+}
+
+input, select, textarea {
+  background: #ffffff !important;
+  color: #25282e !important;
+  border-color: #c8ccd2 !important;
+}
+
+.tag, .pill {
+  background: #f4efe5 !important;
+  color: #755c30 !important;
+  border-color: #dfd1b4 !important;
+}
+
+.deck-num {
+  background: #292c32 !important;
+  color: #ffffff !important;
+}
+
+.day.today {
+  border-color: #c7a66d !important;
+}
+
+
+/* Galones rojos: tres franjas apiladas sin tapar texto */
+
+header {
+  position: relative;
+}
+
+header::before {
+  content: "";
+  position: absolute;
+  top: 50% !important;
+  left: 12px !important;
+  transform: translateY(-50%);
+  width: 30px !important;
+  height: 27px !important;
+  background: linear-gradient(
+    to bottom,
+    #b3343a 0% 18%,
+    transparent 18% 39%,
+    #b3343a 39% 57%,
+    transparent 57% 78%,
+    #b3343a 78% 96%,
+    transparent 96%
+  ) !important;
+  pointer-events: none;
+}
+
+header {
+  padding-left: 55px !important;
+}
+
+
+
+/* OpoPlan - interfaz inspirada en la maqueta aprobada */
+
+.op-hero {
+  min-height: 260px;
+  border-radius: 24px 24px 0 0;
+  background:
+    radial-gradient(ellipse at 85% 80%, #664038 0%, transparent 40%),
+    linear-gradient(135deg, #071d30, #102c42 60%, #17191e);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  overflow: hidden;
+}
+
+.op-hero-inner {
+  text-align: center;
+}
+
+.op-insignia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.op-name {
+  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.op-cabo {
+  display: inline-block;
+  border: 1px solid #fff;
+  border-radius: 20px;
+  padding: 4px 24px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.op-hero p {
+  color: #e4e7eb;
+  margin-top: 18px;
+}
+
+.op-galones {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 65px;
+  transform: rotate(-12deg);
+  flex-shrink: 0;
+}
+
+.op-galones i {
+  display: block;
+  height: 10px;
+  background: #bd3036;
+  border: 1px solid #e44b50;
+  border-radius: 2px;
+  box-shadow: 0 2px 3px #0005;
+}
+
+.op-home-panel {
+  position: relative;
+  margin: -22px 14px 24px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 23px;
+  box-shadow: 0 12px 32px #10182016;
+}
+
+.op-home-panel h2,
+.op-syllabus h2 {
+  color: #101b2d !important;
+  font-size: 29px;
+  margin: 0 0 18px;
+}
+
+.op-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 18px;
+  background: #fff !important;
+  color: #111827 !important;
+  border: 1px solid #e8eaee;
+  border-radius: 19px;
+  padding: 18px;
+  margin: 10px 0;
+  box-shadow: 0 3px 10px #18212d0c;
+  cursor: pointer;
+}
+
+.op-action-icon {
+  font-size: 34px;
+  color: #133c64;
+  min-width: 40px;
+}
+
+.op-action strong,
+.op-topic-content strong {
+  display: block;
+  font-size: 18px;
+}
+
+.op-action small,
+.op-topic-content small {
+  display: block;
+  font-size: 13px;
+  color: #526071;
+  margin-top: 3px;
+}
+
+.op-chevron {
+  font-size: 32px;
+  margin-left: auto;
+  color: #1c293a;
+}
+
+.op-evolution {
+  border: 1px solid #e9eaed;
+  border-radius: 20px;
+  padding: 20px;
+  margin: 18px 0;
+  box-shadow: 0 3px 12px #1018200a;
+}
+
+.op-evolution h3,
+.op-upcoming h3 {
+  margin: 0 0 15px;
+  color: #111827 !important;
+}
+
+.op-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+}
+
+.op-stats > div {
+  padding: 10px 5px;
+}
+
+.op-stats > div + div {
+  border-left: 1px solid #e8e9ec;
+}
+
+.op-stats strong {
+  display: block;
+  font-size: 23px;
+  color: #22272e;
+}
+
+.op-stats small {
+  display: block;
+  color: #59616e;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.op-pomodoro {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 25px;
+  padding: 18px 12px;
+  background: #202329 !important;
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.op-upcoming {
+  margin-top: 24px;
+}
+
+.op-event {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e9ebee;
+}
+
+.op-event small {
+  color: #68717d;
+}
+
+.op-syllabus {
+  background: #f7f8fa;
+  padding: 22px;
+  border-radius: 24px;
+}
+
+.op-syllabus-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.op-syllabus-title h2 {
+  margin-bottom: 4px;
+}
+
+.op-syllabus-title p {
+  color: #485466;
+  margin: 0;
+}
+
+.op-book {
+  font-size: 36px;
+  color: #153f68;
+}
+
+.op-topic-list {
+  display: grid;
+  gap: 10px;
+}
+
+.op-topic-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 15px;
+  padding: 17px;
+  background: #fff !important;
+  color: #141b27 !important;
+  border: 1px solid #e8e9ed;
+  border-radius: 19px;
+  box-shadow: 0 3px 10px #1723370c;
+  cursor: pointer;
+}
+
+.op-topic-icon {
+  font-size: 30px;
+  color: #143d65;
+}
+
+.op-topic-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.op-topic-content small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.op-progress {
+  display: block;
+  height: 9px;
+  background: #e7e8eb;
+  border-radius: 9px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.op-progress i {
+  display: block;
+  height: 100%;
+  border-radius: 9px;
+}
+
+.op-progress i.done { background: #178344; }
+.op-progress i.working { background: #e4ac24; }
+.op-progress i.pending { background: #c9363c; }
+
+.op-topic-state {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.op-topic-state.done { color: #087a35; }
+.op-topic-state.working { color: #a26b00; }
+.op-topic-state.pending { color: #c0272e; }
+
+@media (max-width: 600px) {
+  .op-hero { min-height: 210px; }
+  .op-home-panel { margin: -20px 4px 18px; padding: 16px; }
+  .op-stats strong { font-size: 18px; }
+  .op-syllabus { padding: 12px; }
+  .op-topic-item { padding: 12px; gap: 10px; }
+  .op-topic-state { font-size: 11px; }
+  .op-topic-icon { font-size: 24px; }
+}
+
+
+
+/* OPOLAN CABO - CABECERA DE INICIO */
+.op-hero {
+  position: relative;
+  min-height: 245px;
+  overflow: hidden;
+  border-radius: 22px 22px 0 0;
+  background:
+    linear-gradient(90deg, rgba(4,21,32,.62), rgba(4,21,32,.08)),
+    url("cabecera-inicio-opoplan.jpg") center / cover no-repeat,
+    #092b34;
+}
+.op-hero-inner {
+  position: relative;
+  z-index: 1;
+  color: white;
+  padding: 30px 25px;
+}
+.op-hero .op-name { color: white; }
+.op-hero .op-cabo {
+  color: white;
+  border-color: rgba(255,255,255,.8);
+}
+.op-home-panel {
+  position: relative;
+  margin-top: -15px;
+  z-index: 2;
+  border-radius: 22px;
+}
+.op-home-panel .op-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.op-home-panel .op-action-icon {
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .op-hero { min-height: 215px; }
+  .op-hero-inner { padding: 24px 20px; }
+}
+
+
+/* OPOLAN CABO - CABECERA BLANCA DEFINITIVA */
+.op-home-header {
+  background: #ffffff !important;
+  border-radius: 20px 20px 0 0;
+  padding: 18px 22px !important;
+  position: relative;
+  z-index: 2;
+}
+
+.op-home-header .op-hero-inner {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  color: #17202b !important;
+  text-align: center;
+}
+
+.op-home-header .op-insignia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.op-home-header .op-name {
+  color: #17202b !important;
+}
+
+.op-home-header .op-cabo {
+  color: #17202b !important;
+  border-color: #bd922c !important;
+}
+
+.op-home-header p {
+  color: #65717c !important;
+  margin: 10px 0 0 !important;
+  text-align: center;
+}
+
+.op-home-header .op-galones i {
+  background: #c91e28 !important;
+}
+
+.op-hero {
+  min-height: 240px !important;
+  border-radius: 0 0 18px 18px !important;
+  background-image:
+    linear-gradient(180deg, transparent 75%, rgba(0,0,0,.12)),
+    url("cabecera-inicio-opoplan.jpg") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+@media (max-width: 600px) {
+  .op-home-header {
+    padding: 15px 14px !important;
+  }
+  .op-hero {
+    min-height: 205px !important;
+  }
+}
+
+/* OPOLAN CABO - CENTRADO DE CABECERA Y MENU LIMPIO */
+
+/* Cabecera blanca centrada */
+.op-home-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.op-home-header .op-hero-inner {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.op-home-header .op-insignia {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.op-home-header h1,
+.op-home-header p,
+.op-home-header .op-name {
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Ocultar las tres rayas del menú, no los galones */
+.menu-toggle,
+.hamburger,
+.sidebar-toggle,
+#menuToggle,
+#toggleSidebar,
+button[aria-label="Abrir menú"],
+button[aria-label="Menú"] {
+  display: none !important;
+}
+
+
+/* OPOPLAN CABO - CALENDARIO SUAVE */
+
+.op-calendar-main,
+.op-calendar-detail {
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.op-calendar-month {
+  background: #f7f9fc;
+  border: 1px solid #e7ebf1;
+  border-radius: 15px;
+  padding: 10px;
+  margin-bottom: 16px;
+}
+
+.op-calendar-month h2 {
+  text-align: center;
+  text-transform: capitalize;
+  font-size: 19px;
+  margin: 0;
+}
+
+.op-calendar-main .day {
+  border-radius: 12px;
+}
+
+.op-calendar-main .day.selected {
+  box-shadow: 0 3px 12px #17263b22;
+}
+
+.op-calendar-main .calendar-chip {
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.op-calendar-detail .op-calendar-date {
+  background: #102b3b;
+  color: white;
+  padding: 15px 17px;
+  border-radius: 13px;
+  margin-bottom: 16px;
+  text-transform: capitalize;
+}
+
+.op-calendar-detail .event-entry {
+  border-radius: 13px;
+  padding: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 10px #17263b0d;
+  border-top: 1px solid #ffffff80;
+  border-right: 1px solid #ffffff80;
+  border-bottom: 1px solid #ffffff80;
+}
+
+.op-calendar-detail .event-entry b {
+  color: #172638;
+}
+
+.op-calendar-detail .event-entry .muted {
+  color: #586575;
+}
+
+@media (max-width: 600px) {
+  .op-calendar-detail .event-entry {
+    padding: 12px;
+  }
+
+  .op-calendar-month h2 {
+    font-size: 16px;
+  }
+}
+
+
+
+/* OPOPLAN CABO - CORRECCIONES CALENDARIO E INICIO */
+
+/* 1. Quitar definitivamente las tres rayas rojas */
+header::before,
+.op-home-header::before {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+}
+
+header.op-home-header {
+    padding-left: 22px !important;
+}
+
+@media (max-width: 600px) {
+    header.op-home-header {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+}
+
+/* 2. Colores intensos en el calendario mensual */
+.op-calendar-main .day .calendar-chip {
+    background: var(--chip) !important;
+    background-color: var(--chip) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--chip) !important;
+    border-left: 4px solid var(--chip) !important;
+    border-radius: 5px !important;
+    font-weight: 700 !important;
+}
+
+/* 3. Día de hoy en amarillo dorado */
+.op-calendar-main .day.today {
+    background: #ffcf39 !important;
+    background-color: #ffcf39 !important;
+    border: 2px solid #e2a900 !important;
+    color: #17202b !important;
+    box-shadow: 0 3px 10px #a779002e !important;
+}
+
+.op-calendar-main .day.today > b {
+    color: #17202b !important;
+    font-weight: 850 !important;
+}
+
+/* Día seleccionado, cuando no es hoy */
+.op-calendar-main .day.selected:not(.today) {
+    background: #e9f0ff !important;
+    border: 2px solid #4268a8 !important;
+    box-shadow: 0 3px 12px #17263b18 !important;
+}
+
+/* Mantener el dorado si hoy también está seleccionado */
+.op-calendar-main .day.today.selected {
+    background: #ffcf39 !important;
+    border-color: #d49b00 !important;
+}
+
+/* 4. Tarjetas inferiores con colores suaves */
+.op-calendar-detail .event-entry {
+    background: color-mix(
+        in srgb,
+        var(--chip) 12%,
+        white
+    ) !important;
+    border-left: 5px solid var(--chip) !important;
+    color: #172638 !important;
+}
+
+.op-calendar-detail .event-entry b {
+    color: #172638 !important;
+}
+
+
+
+/* OPOPLAN CABO - TARJETAS GIRATORIAS */
+
+.op-flip-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    min-height: 250px;
+    margin: 20px 0 15px;
+    padding: 28px 22px;
+    border: 2px solid var(--deck-color);
+    border-radius: 22px;
+    background: #f7f9fc;
+    color: #172638;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 8px 22px #17263812;
+    animation: op-card-turn .35s ease both;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.op-flip-card.op-flip-answer {
+    background: color-mix(in srgb, var(--deck-color) 11%, white);
+}
+
+.op-flip-label {
+    color: var(--deck-color);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.op-flip-content {
+    display: block;
+    width: 100%;
+    color: #172638;
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 700;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.op-flip-hint {
+    color: #667487;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.op-flip-card:focus-visible {
+    outline: 3px solid var(--deck-color);
+    outline-offset: 3px;
+}
+
+@keyframes op-card-turn {
+    0%   { transform: rotateY(90deg); opacity: .65; }
+    100% { transform: rotateY(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .op-flip-card { animation: none; }
+}
+
+@media (max-width: 600px) {
+    .op-flip-card {
+        min-height: 230px;
+        padding: 22px 16px;
+    }
+}
+
+
+/* OPOPLAN TESTS */
+.op-options{display:grid;gap:10px;margin:18px 0}
+.op-option{width:100%;text-align:left;padding:15px;
+border:1px solid #dce2e9;border-radius:13px;
+background:white;color:#172638;cursor:pointer;font:inherit}
+.op-option.op-right{background:#e6f6ea!important;
+border:2px solid #16a34a!important;color:#12572b!important}
+.op-option.op-wrong{background:#ffeded!important;
+border:2px solid #dc2626!important;color:#8f1d1d!important}
+.op-option:disabled{opacity:1;cursor:default}
+.op-option b{margin-right:9px}
+
+
+/* OPOPLAN - BARRA FLOTANTE GRIS PERLA */
+/* Solo móviles: el menú del Mac no cambia */
+
+@media (max-width: 780px) {
+
+  .shell {
+    display: block;
+  }
+
+  aside {
+    position: fixed !important;
+    top: auto !important;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+    z-index: 1000;
+
+    width: calc(100% - 24px) !important;
+    max-width: 500px;
+    height: auto !important;
+
+    padding: 7px !important;
+    margin: 0 !important;
+
+    background: rgba(255, 255, 255, .96) !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 23px !important;
+
+    box-shadow:
+      0 8px 30px rgba(30, 41, 59, .10),
+      0 2px 8px rgba(30, 41, 59, .04) !important;
+
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+
+  aside .brand,
+  aside .sidefoot {
+    display: none !important;
+  }
+
+  aside nav {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch;
+    gap: 3px !important;
+
+    width: 100%;
+    margin: 0;
+    padding: 0 !important;
+
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  aside nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  aside nav button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 49px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 2px !important;
+    margin: 0 !important;
+
+    border: 0 !important;
+    border-radius: 16px !important;
+
+    background: transparent !important;
+    color: #66717C !important;
+
+    font-size: clamp(9px, 2.5vw, 11px) !important;
+    font-weight: 600 !important;
+    line-height: 1.2;
+    text-align: center !important;
+    letter-spacing: -.2px;
+
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+
+    -webkit-tap-highlight-color: transparent;
+    transition: background .18s ease, color .18s ease;
+  }
+
+  aside nav button.active {
+    background: #E4E7EB !important;
+    color: #354351 !important;
+    font-weight: 750 !important;
+    border-left: 0 !important;
+    box-shadow: inset 0 0 0 1px #DCE0E5;
+  }
+
+  aside nav button:focus-visible {
+    outline: 2px solid #7B8794;
+    outline-offset: -2px;
+  }
+
+  main {
+    padding-bottom:
+      calc(110px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  #toast {
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  aside nav button {
+    transition: none;
+  }
+}
