@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "temas": [
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 1,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Estatuto del Personal de la Guardia Civil"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 2,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Régimen Interior"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 3,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Deontología Profesional"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 4,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Derechos Humanos"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 5,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Derecho Administrativo"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 6,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Protección de la Seguridad Ciudadana"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 7,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Derecho Fiscal"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 8,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Armas, Explosivos, Artículos Pirotécnicos y Cartuchería"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 9,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Patrimonio Natural y Biodiversidad"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 10,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Protección Integral contra la Violencia de Género y Actuación con Menores"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 11,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Derecho Penal"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 12,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Poder Judicial"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 13,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Ley de Enjuiciamiento Criminal"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 14,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Igualdad Efectiva de Mujeres y Hombres"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 15,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Protección Civil"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 16,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Tecnologías de la Información y la Comunicación"
+    },
+    {
+      "bloques": [],
+      "estado": "pendiente",
+      "fichas": [],
+      "notas": "",
+      "numero": 17,
+      "oposicion": "cabo",
+      "tiempoTotalEstudiado": 0,
+      "titulo": "Topografía"
+    }
+  ],
+  "sesiones": [],
+  "categorias": [
+    {
+      "colorHex": "D8EB36",
+      "icono": "checkmark.seal.fill",
+      "nombre": "Test",
+      "orden": 3
+    },
+    {
+      "colorHex": "FF9500",
+      "icono": "briefcase.fill",
+      "nombre": "Laboral",
+      "orden": 1
+    },
+    {
+      "colorHex": "007AFF",
+      "icono": "book.fill",
+      "nombre": "Estudio",
+      "orden": 0
+    },
+    {
+      "colorHex": "34C759",
+      "icono": "person.fill",
+      "nombre": "Personal",
+      "orden": 2
+    },
+    {
+      "colorHex": "BD37F2",
+      "icono": "graduationcap.fill",
+      "nombre": "Psicotécnicos ",
+      "orden": 4
+    },
+    {
+      "colorHex": "E53A79",
+      "icono": "airplane",
+      "nombre": "Inglés ",
+      "orden": 5
+    }
+  ],
+  "eventos": [],
+  "simulacros": [],
+  "revisiones": []
+}
