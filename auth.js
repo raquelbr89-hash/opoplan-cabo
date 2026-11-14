@@ -20,8 +20,14 @@ const backup=(d,tag)=>{const a=document.createElement('a');const u=URL.createObj
 let sb,user=null,working=false,mode='none',baseline=null,stamp=null,pendingTimer=null,needsRetry=false,applyingCloud=false;
 const baselineKey=()=>`opoplan-sync-base-v1:${user.id}`;
 const sessionKey=()=>`opoplan-sync-session-v1:${user.id}`;
-const readSavedBase=()=>{for(const storage of [localStorage,sessionStorage]){try{const v=JSON.parse(storage.getItem(baselineKey())||'null');if(v&&typeof v.baseline==='string'&&typeof v.stamp==='string')return v;}catch(e){}}return null;};
-const saveBase=(data,ts)=>{baseline=normalize(data);stamp=ts;const value=JSON.stringify({baseline,stamp});localStorage.setItem(baselineKey(),value);try{sessionStorage.setItem(baselineKey(),value);}catch(e){}};
+// Keep a second, independent record of the last *confirmed* synchronization.
+// Safari can discard one storage area; never infer a safe merge from a missing record.
+const openSyncDb=()=>new Promise((resolve,reject)=>{if(!('indexedDB' in window))return resolve(null);const r=indexedDB.open('opoplan-sync-references',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('bases'))r.result.createObjectStore('bases');};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+const dbGet=async key=>{let db;try{db=await openSyncDb();if(!db)return null;return await new Promise((resolve,reject)=>{const t=db.transaction('bases','readonly');const r=t.objectStore('bases').get(key);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);});}catch(e){return null;}finally{db?.close();}};
+const dbPut=async(key,value)=>{let db;try{db=await openSyncDb();if(!db)return;await new Promise((resolve,reject)=>{const t=db.transaction('bases','readwrite');t.objectStore('bases').put(value,key);t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);});}catch(e){/* Storage can be unavailable in Safari private mode. */}finally{db?.close();}};
+const isBase=v=>v&&typeof v.baseline==='string'&&typeof v.stamp==='string';
+const readSavedBase=async()=>{for(const storage of [localStorage,sessionStorage]){try{const v=JSON.parse(storage.getItem(baselineKey())||'null');if(isBase(v))return v;}catch(e){}}const v=await dbGet(baselineKey());return isBase(v)?v:null;};
+const saveBase=async(data,ts)=>{const next={baseline:normalize(data),stamp:ts};if(!isBase(next))throw Error('No se recibió una referencia de sincronización válida.');let saved=false;for(const storage of [localStorage,sessionStorage]){try{storage.setItem(baselineKey(),JSON.stringify(next));saved=true;}catch(e){}}await dbPut(baselineKey(),next);const verified=await readSavedBase();if(!verified||verified.baseline!==next.baseline||verified.stamp!==next.stamp)throw Error('Safari no pudo conservar la referencia de sincronización. No se confirma la sincronización.');baseline=next.baseline;stamp=next.stamp;};
 const clearBase=()=>{baseline=null;stamp=null;};
 const ui=()=>{const logged=!!user;[email,password,login,register].forEach(e=>e.hidden=logged);logout.hidden=!logged;check.hidden=!logged;useCloud.hidden=!(logged&&mode==='conflict');useLocal.hidden=!(logged&&mode==='conflict');};
 const readRemote=async()=>{const {data,error}=await sb.from('opoplan_datos').select('datos,actualizado_en').eq('user_id',user.id).maybeSingle();if(error)throw error;return data;};
@@ -38,22 +44,22 @@ async function synchronize(){
   if(!valid(remote.datos))throw Error('Copia de nube incompatible; no se ha cambiado nada.');
   const localStr=normalize(here),cloudStr=normalize(remote.datos);
   if(baseline===null){
-   const stored=readSavedBase();
+   const stored=await readSavedBase();
    if(stored&&typeof stored.baseline==='string'&&typeof stored.stamp==='string'){baseline=stored.baseline;stamp=stored.stamp;}
   }
-  if(baseline===null){if(localStr===cloudStr){saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Datos iguales en este dispositivo y la nube. Sincronización automática activa.');}else resolveConflict('No hay una referencia local fiable de la última sincronización:');return;}
-  if(localStr===cloudStr){saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Sincronizado. Los datos están actualizados.');return;}
+  if(baseline===null){if(localStr===cloudStr){await saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Datos iguales en este dispositivo y la nube. Sincronización automática activa.');}else resolveConflict('No se ha podido recuperar la referencia de la última sincronización:');return;}
+  if(localStr===cloudStr){await saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Sincronizado. Los datos están actualizados.');return;}
   if(localStr===baseline){
    // A save may have happened while the cloud request was in flight. Never overwrite it.
    if(normalize(local())!==localStr){needsRetry=true;return;}
-   backup(here,'antes_de_recibir_nube');applyCloud(remote.datos);saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Cambios de la nube recibidos. Sincronización activa.');return;}
+   backup(here,'antes_de_recibir_nube');applyCloud(remote.datos);await saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Cambios de la nube recibidos. Sincronización activa.');return;}
   if(cloudStr!==baseline){resolveConflict('Se han modificado datos en dos dispositivos:');return;}
   // Compare-and-swap atomically on the server: never overwrite newer remote data.
   if(normalize(local())!==localStr){needsRetry=true;return;}
   const {data,error}=await sb.rpc('opoplan_guardar_si_coincide',{p_esperado:stamp,p_datos:here});
   if(error)throw Error(`No se pudo guardar de forma segura (${error.message}). Comprueba que instalaste la función SQL incluida.`);
   if(!data?.guardado){resolveConflict('La nube cambió durante la subida:');return;}
-  saveBase(here,data.actualizado_en);mode='ready';status('Cambios guardados en Supabase. Sincronización automática activa.');
+  await saveBase(here,data.actualizado_en);mode='ready';status('Cambios guardados en Supabase. Sincronización automática activa.');
  }catch(err){status('Sincronización pendiente: '+err.message,'warn');}
  finally{working=false;setBusy(false);ui();if(needsRetry){needsRetry=false;queueMicrotask(()=>synchronize());}}
 }
@@ -63,11 +69,11 @@ async function choose(source){if(!user||working||!confirm(source==='cloud'?'Se d
   const remote=await readRemote(),here=local();if(!valid(here))throw Error('Datos locales no válidos.');
   if(source==='cloud'){
    if(!remote||!valid(remote.datos))throw Error('No existe una copia válida en la nube.');
-   backup(here,'local_antes_de_reemplazar');applyCloud(remote.datos);saveBase(remote.datos,remote.actualizado_en);
+   backup(here,'local_antes_de_reemplazar');applyCloud(remote.datos);await saveBase(remote.datos,remote.actualizado_en);
   }else{
    if(remote){if(!valid(remote.datos))throw Error('Copia remota incompatible.');backup(remote.datos,'nube_antes_de_reemplazar');
-    const {data,error}=await sb.rpc('opoplan_guardar_si_coincide',{p_esperado:remote.actualizado_en,p_datos:here});if(error)throw error;if(!data?.guardado)throw Error('La nube cambió; vuelve a comprobar antes de intentar subir.');saveBase(here,data.actualizado_en);
-   }else{const {error}=await sb.from('opoplan_datos').insert({user_id:user.id,datos:here});if(error)throw error;const latest=await readRemote();saveBase(here,latest.actualizado_en);}
+    const {data,error}=await sb.rpc('opoplan_guardar_si_coincide',{p_esperado:remote.actualizado_en,p_datos:here});if(error)throw error;if(!data?.guardado)throw Error('La nube cambió; vuelve a comprobar antes de intentar subir.');await saveBase(here,data.actualizado_en);
+   }else{const {error}=await sb.from('opoplan_datos').insert({user_id:user.id,datos:here});if(error)throw error;const latest=await readRemote();await saveBase(here,latest.actualizado_en);}
   }
   mode='ready';status('Copia elegida y sincronizada. Se ha descargado un respaldo de la copia sustituida.');
  }catch(err){mode='conflict';status('No se sustituyó nada: '+err.message,'warn');}
@@ -77,7 +83,7 @@ if(!configured){status('Configura Project URL y Publishable key en supabase-conf
 else try{
  const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');sb=createClient(SUPABASE_URL.trim(),SUPABASE_PUBLISHABLE_KEY.trim(),{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  const session=(await sb.auth.getSession()).data.session;
- const change=async s=>{const id=s?.user?.id;if(id!==user?.id){user=s?.user||null;clearBase();mode='none';if(user){const saved=readSavedBase();if(saved){baseline=saved.baseline;stamp=saved.stamp;}}}ui();if(user){if(mode!=='conflict')status('Cuenta conectada. Comprobando sincronización…');await synchronize();}else status('Sin sesión. Entra para sincronizar.');};
+ const change=async s=>{const id=s?.user?.id;if(id!==user?.id){user=s?.user||null;clearBase();mode='none';if(user){const saved=await readSavedBase();if(saved){baseline=saved.baseline;stamp=saved.stamp;}}}ui();if(user){if(mode!=='conflict')status('Cuenta conectada. Comprobando sincronización…');await synchronize();}else status('Sin sesión. Entra para sincronizar.');};
  await change(session);
  sb.auth.onAuthStateChange((_event,s)=>{queueMicrotask(()=>change(s));});
  login.onclick=async()=>{setBusy(true);const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error)status(error.message,'error');setBusy(false);};
