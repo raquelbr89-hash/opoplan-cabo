@@ -1,9 +1,13 @@
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './supabase-config.js';
 const mount=document.getElementById('opoplan-auth');
+const settingsToggle=document.getElementById('opoplan-settings-toggle');
+mount.hidden=true;
+const showSettings=(show)=>{mount.hidden=!show;if(settingsToggle)settingsToggle.setAttribute('aria-expanded',String(show));};
+if(settingsToggle)settingsToggle.addEventListener('click',()=>showSettings(mount.hidden));
 const KEY='opoplan-cabo-local-v1';
 const configured=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(SUPABASE_URL.trim()) && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_');
-const style=document.createElement('style');style.textContent=`#opoplan-auth{margin:12px 0 18px;padding:14px;border:1px solid #cbd5d1;border-radius:12px;background:#f8faf9;color:#17372b}#opoplan-auth .auth-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}#opoplan-auth input{min-width:160px;max-width:100%;padding:9px;border:1px solid #a9b9b1;border-radius:8px}#opoplan-auth button{padding:9px 12px;border:0;border-radius:8px;background:#123b2b;color:white;cursor:pointer}#opoplan-auth button:disabled{opacity:.55}#opoplan-auth small{display:block;margin-top:7px}#opoplan-auth .auth-error{color:#9b2525}#opoplan-auth .auth-warn{color:#8a5100}`;document.head.append(style);
-const title=document.createElement('strong');title.textContent='Cuenta de OpoPlan · sincronización de pruebas';
+const style=document.createElement('style');style.textContent=`#opoplan-auth[hidden]{display:none!important}#opoplan-settings-toggle{padding:8px 12px;border:1px solid #b7c9be;border-radius:9px;background:#fff;color:#123b2b;font:inherit;cursor:pointer}#opoplan-settings-toggle:focus-visible{outline:2px solid #123b2b;outline-offset:2px}.opoplan-header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#opoplan-auth{margin:12px 0 18px;padding:14px;border:1px solid #cbd5d1;border-radius:12px;background:#f8faf9;color:#17372b}#opoplan-auth .auth-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}#opoplan-auth input{min-width:160px;max-width:100%;padding:9px;border:1px solid #a9b9b1;border-radius:8px}#opoplan-auth button{padding:9px 12px;border:0;border-radius:8px;background:#123b2b;color:white;cursor:pointer}#opoplan-auth button:disabled{opacity:.55}#opoplan-auth small{display:block;margin-top:7px}#opoplan-auth .auth-error{color:#9b2525}#opoplan-auth .auth-warn{color:#8a5100}`;document.head.append(style);
+const title=document.createElement('strong');title.textContent='Cuenta y sincronización';
 const msg=document.createElement('div');msg.setAttribute('role','status');mount.append(title,msg);
 const note=document.createElement('small');note.textContent='Los datos se conservan en este dispositivo. Los conflictos requieren confirmación.';mount.append(note);
 const row=document.createElement('div');row.className='auth-row';mount.append(row);
@@ -21,10 +25,10 @@ let sb,user=null,working=false,mode='none',baseline=null,stamp=null,pendingTimer
 const baselineKey=()=>`opoplan-sync-base-v1:${user.id}`;
 const saveBase=(data,ts)=>{baseline=normalize(data);stamp=ts;localStorage.setItem(baselineKey(),JSON.stringify({baseline,stamp}));};
 const clearBase=()=>{baseline=null;stamp=null;};
-const ui=()=>{const logged=!!user;[email,password,login,register].forEach(e=>e.hidden=logged);logout.hidden=!logged;check.hidden=!logged;useCloud.hidden=!(logged&&mode==='conflict');useLocal.hidden=!(logged&&mode==='conflict');};
+const ui=()=>{if(settingsToggle)settingsToggle.textContent=mode==='conflict'?'⚠ Ajustes · revisar':'⚙ Ajustes';const logged=!!user;[email,password,login,register].forEach(e=>e.hidden=logged);logout.hidden=!logged;check.hidden=!logged;useCloud.hidden=!(logged&&mode==='conflict');useLocal.hidden=!(logged&&mode==='conflict');};
 const readRemote=async()=>{const {data,error}=await sb.from('opoplan_datos').select('datos,actualizado_en').eq('user_id',user.id).maybeSingle();if(error)throw error;return data;};
 const applyCloud=d=>{if(!valid(d))throw Error('Los datos de la nube no tienen el formato esperado.');if(typeof window.opoplanApplyCloudData!=='function')throw Error('La aplicación aún no está preparada.');window.opoplanApplyCloudData(d);};
-const resolveConflict=(text='')=>{mode='conflict';ui();status(`${text} Hay datos distintos en este dispositivo y en la nube. Elige qué copia conservar. Se descargará un respaldo antes de sustituir datos.`,'warn');};
+const resolveConflict=(text='')=>{mode='conflict';showSettings(true);ui();status(`${text} Hay datos distintos en este dispositivo y en la nube. Elige qué copia conservar. Se descargará un respaldo antes de sustituir datos.`,'warn');};
 async function synchronize(){
  if(!user||working||mode==='conflict'||!window.opoplanReady||!navigator.onLine)return;
  working=true;setBusy(true);
