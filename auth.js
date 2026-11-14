@@ -17,16 +17,17 @@ const normalize=v=>JSON.stringify(v,(_,x)=>x && !Array.isArray(x) && typeof x===
 const local=()=>{const raw=localStorage.getItem(KEY);return raw?JSON.parse(raw):null;};
 const valid=d=>d&&Array.isArray(d.temas)&&d.temas.length===17&&Array.isArray(d.sesiones)&&Array.isArray(d.eventos)&&Array.isArray(d.categorias);
 const backup=(d,tag)=>{const a=document.createElement('a');const u=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.href=u;a.download=`OpoPlan_respaldo_${tag}_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000);};
-let sb,user=null,working=false,mode='none',baseline=null,stamp=null,pendingTimer=null;
+let sb,user=null,working=false,mode='none',baseline=null,stamp=null,pendingTimer=null,needsRetry=false,applyingCloud=false;
 const baselineKey=()=>`opoplan-sync-base-v1:${user.id}`;
 const saveBase=(data,ts)=>{baseline=normalize(data);stamp=ts;localStorage.setItem(baselineKey(),JSON.stringify({baseline,stamp}));};
 const clearBase=()=>{baseline=null;stamp=null;};
 const ui=()=>{const logged=!!user;[email,password,login,register].forEach(e=>e.hidden=logged);logout.hidden=!logged;check.hidden=!logged;useCloud.hidden=!(logged&&mode==='conflict');useLocal.hidden=!(logged&&mode==='conflict');};
 const readRemote=async()=>{const {data,error}=await sb.from('opoplan_datos').select('datos,actualizado_en').eq('user_id',user.id).maybeSingle();if(error)throw error;return data;};
-const applyCloud=d=>{if(!valid(d))throw Error('Los datos de la nube no tienen el formato esperado.');if(typeof window.opoplanApplyCloudData!=='function')throw Error('La aplicación aún no está preparada.');window.opoplanApplyCloudData(d);};
+const applyCloud=d=>{applyingCloud=true;try{if(!valid(d))throw Error('Los datos de la nube no tienen el formato esperado.');if(typeof window.opoplanApplyCloudData!=='function')throw Error('La aplicación aún no está preparada.');window.opoplanApplyCloudData(d);}finally{applyingCloud=false;}};
 const resolveConflict=(text='')=>{mode='conflict';window.opoplanOpenSettings?.();ui();status(`${text} Hay datos distintos en este dispositivo y en la nube. Elige qué copia conservar. Se descargará un respaldo antes de sustituir datos.`,'warn');};
 async function synchronize(){
- if(!user||working||mode==='conflict'||!window.opoplanReady||!navigator.onLine)return;
+ if(!user||mode==='conflict'||!window.opoplanReady||!navigator.onLine)return;
+ if(working){needsRetry=true;return;}
  working=true;setBusy(true);
  try{
   const here=local();if(!valid(here))throw Error('Datos locales no válidos; no se ha sincronizado.');
@@ -40,15 +41,19 @@ async function synchronize(){
   }
   if(baseline===null){if(localStr===cloudStr){saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Datos iguales en este dispositivo y la nube. Sincronización automática activa.');}else resolveConflict('Primera conexión:');return;}
   if(localStr===cloudStr){saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Sincronizado. Los datos están actualizados.');return;}
-  if(localStr===baseline){backup(here,'antes_de_recibir_nube');applyCloud(remote.datos);saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Cambios de la nube recibidos. Sincronización activa.');return;}
+  if(localStr===baseline){
+   // A save may have happened while the cloud request was in flight. Never overwrite it.
+   if(normalize(local())!==localStr){needsRetry=true;return;}
+   backup(here,'antes_de_recibir_nube');applyCloud(remote.datos);saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Cambios de la nube recibidos. Sincronización activa.');return;}
   if(cloudStr!==baseline){resolveConflict('Se han modificado datos en dos dispositivos:');return;}
   // Compare-and-swap atomically on the server: never overwrite newer remote data.
+  if(normalize(local())!==localStr){needsRetry=true;return;}
   const {data,error}=await sb.rpc('opoplan_guardar_si_coincide',{p_esperado:stamp,p_datos:here});
   if(error)throw Error(`No se pudo guardar de forma segura (${error.message}). Comprueba que instalaste la función SQL incluida.`);
   if(!data?.guardado){resolveConflict('La nube cambió durante la subida:');return;}
   saveBase(here,data.actualizado_en);mode='ready';status('Cambios guardados en Supabase. Sincronización automática activa.');
  }catch(err){status('Sincronización pendiente: '+err.message,'warn');}
- finally{working=false;setBusy(false);ui();}
+ finally{working=false;setBusy(false);ui();if(needsRetry){needsRetry=false;queueMicrotask(()=>synchronize());}}
 }
 async function choose(source){if(!user||working||!confirm(source==='cloud'?'Se descargará una copia de tus datos locales y después se sustituirán por los de Supabase. ¿Continuar?':'Se descargará una copia de los datos de Supabase y después se sustituirán por los de este dispositivo. ¿Continuar?'))return;
  working=true;setBusy(true);
@@ -77,7 +82,7 @@ else try{
  register.onclick=async()=>{setBusy(true);const {data,error}=await sb.auth.signUp({email:email.value.trim(),password:password.value});status(error?error.message:data.session?'Cuenta creada.':'Comprueba tu correo para confirmar la cuenta.',error?'error':'');setBusy(false);};
  logout.onclick=async()=>{setBusy(true);const {error}=await sb.auth.signOut();if(error)status(error.message,'error');setBusy(false);};
  check.onclick=()=>synchronize();useCloud.onclick=()=>choose('cloud');useLocal.onclick=()=>choose('local');
- window.addEventListener('opoplan-local-change',()=>{if(!user||mode==='conflict')return;clearTimeout(pendingTimer);pendingTimer=setTimeout(synchronize,1500);});
+ window.addEventListener('opoplan-local-change',()=>{if(applyingCloud||!user||mode==='conflict')return;needsRetry=working||needsRetry;clearTimeout(pendingTimer);pendingTimer=setTimeout(synchronize,1500);});
  window.addEventListener('opoplan-ready',()=>synchronize());window.addEventListener('online',()=>synchronize());window.addEventListener('focus',()=>synchronize());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)synchronize();});setInterval(()=>{if(!document.hidden)synchronize();},20000);
 }catch(err){status('No se pudo iniciar Supabase: '+err.message,'error');}
