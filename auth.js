@@ -19,7 +19,9 @@ const valid=d=>d&&Array.isArray(d.temas)&&d.temas.length===17&&Array.isArray(d.s
 const backup=(d,tag)=>{const a=document.createElement('a');const u=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.href=u;a.download=`OpoPlan_respaldo_${tag}_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000);};
 let sb,user=null,working=false,mode='none',baseline=null,stamp=null,pendingTimer=null,needsRetry=false,applyingCloud=false;
 const baselineKey=()=>`opoplan-sync-base-v1:${user.id}`;
-const saveBase=(data,ts)=>{baseline=normalize(data);stamp=ts;localStorage.setItem(baselineKey(),JSON.stringify({baseline,stamp}));};
+const sessionKey=()=>`opoplan-sync-session-v1:${user.id}`;
+const readSavedBase=()=>{for(const storage of [localStorage,sessionStorage]){try{const v=JSON.parse(storage.getItem(baselineKey())||'null');if(v&&typeof v.baseline==='string'&&typeof v.stamp==='string')return v;}catch(e){}}return null;};
+const saveBase=(data,ts)=>{baseline=normalize(data);stamp=ts;const value=JSON.stringify({baseline,stamp});localStorage.setItem(baselineKey(),value);try{sessionStorage.setItem(baselineKey(),value);}catch(e){}};
 const clearBase=()=>{baseline=null;stamp=null;};
 const ui=()=>{const logged=!!user;[email,password,login,register].forEach(e=>e.hidden=logged);logout.hidden=!logged;check.hidden=!logged;useCloud.hidden=!(logged&&mode==='conflict');useLocal.hidden=!(logged&&mode==='conflict');};
 const readRemote=async()=>{const {data,error}=await sb.from('opoplan_datos').select('datos,actualizado_en').eq('user_id',user.id).maybeSingle();if(error)throw error;return data;};
@@ -36,10 +38,10 @@ async function synchronize(){
   if(!valid(remote.datos))throw Error('Copia de nube incompatible; no se ha cambiado nada.');
   const localStr=normalize(here),cloudStr=normalize(remote.datos);
   if(baseline===null){
-   const stored=JSON.parse(localStorage.getItem(baselineKey())||'null');
+   const stored=readSavedBase();
    if(stored&&typeof stored.baseline==='string'&&typeof stored.stamp==='string'){baseline=stored.baseline;stamp=stored.stamp;}
   }
-  if(baseline===null){if(localStr===cloudStr){saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Datos iguales en este dispositivo y la nube. Sincronización automática activa.');}else resolveConflict('Primera conexión:');return;}
+  if(baseline===null){if(localStr===cloudStr){saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Datos iguales en este dispositivo y la nube. Sincronización automática activa.');}else resolveConflict('No hay una referencia local fiable de la última sincronización:');return;}
   if(localStr===cloudStr){saveBase(remote.datos,remote.actualizado_en);mode='ready';status('Sincronizado. Los datos están actualizados.');return;}
   if(localStr===baseline){
    // A save may have happened while the cloud request was in flight. Never overwrite it.
@@ -75,7 +77,7 @@ if(!configured){status('Configura Project URL y Publishable key en supabase-conf
 else try{
  const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');sb=createClient(SUPABASE_URL.trim(),SUPABASE_PUBLISHABLE_KEY.trim(),{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  const session=(await sb.auth.getSession()).data.session;
- const change=async s=>{const id=s?.user?.id;if(id!==user?.id){user=s?.user||null;clearBase();mode='none';}ui();if(user){status('Cuenta conectada. Comprobando sincronización…');await synchronize();}else status('Sin sesión. Entra para sincronizar.');};
+ const change=async s=>{const id=s?.user?.id;if(id!==user?.id){user=s?.user||null;clearBase();mode='none';if(user){const saved=readSavedBase();if(saved){baseline=saved.baseline;stamp=saved.stamp;}}}ui();if(user){if(mode!=='conflict')status('Cuenta conectada. Comprobando sincronización…');await synchronize();}else status('Sin sesión. Entra para sincronizar.');};
  await change(session);
  sb.auth.onAuthStateChange((_event,s)=>{queueMicrotask(()=>change(s));});
  login.onclick=async()=>{setBusy(true);const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error)status(error.message,'error');setBusy(false);};
@@ -83,6 +85,6 @@ else try{
  logout.onclick=async()=>{setBusy(true);const {error}=await sb.auth.signOut();if(error)status(error.message,'error');setBusy(false);};
  check.onclick=()=>synchronize();useCloud.onclick=()=>choose('cloud');useLocal.onclick=()=>choose('local');
  window.addEventListener('opoplan-local-change',()=>{if(applyingCloud||!user||mode==='conflict')return;needsRetry=working||needsRetry;clearTimeout(pendingTimer);pendingTimer=setTimeout(synchronize,1500);});
- window.addEventListener('opoplan-ready',()=>synchronize());window.addEventListener('online',()=>synchronize());window.addEventListener('focus',()=>synchronize());
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)synchronize();});setInterval(()=>{if(!document.hidden)synchronize();},20000);
+ window.addEventListener('opoplan-ready',()=>synchronize());window.addEventListener('online',()=>synchronize());window.addEventListener('focus',()=>{if(!working)synchronize();});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!working)synchronize();});setInterval(()=>{if(!document.hidden)synchronize();},20000);
 }catch(err){status('No se pudo iniciar Supabase: '+err.message,'error');}
