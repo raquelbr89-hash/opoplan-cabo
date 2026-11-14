@@ -6,7 +6,8 @@ const COLORES_TEMAS=["#2563EB", "#F97316", "#16A34A", "#EC4899", "#EAB308", "#4F
 function colorTema(n){return COLORES_TEMAS[Number(n)-1]||'#64748B'}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));window.dispatchEvent(new Event('opoplan-local-change'))}function go(v){view=v;render()}function setTopic(n){topicId=+n;view='detalle';render()}
 const pages=[['inicio','⌂ Inicio'],['calendario','▦ Calendario'],['temario','▤ Temario'],['tarjetas','▣ Tarjetas'],['estadisticas','◫ Estadísticas'],['tests','✓ Tests y simulacros'],['ajustes','⚙ Ajustes']];
-function render(){ montarNavegacionInferior(); $('#nav').innerHTML=pages.map(([id,t])=>`<button class="${view===id||(view==='detalle'&&id==='temario')?'active':''}" data-go="${id}">${t}</button>`).join('');$('#heading').textContent=view==='detalle'?`Tema ${topicId}`:pages.find(x=>x[0]===view)?.[1].replace(/^[^ ]+ /,'')||'Inicio';$('#app').innerHTML=({inicio,calendario,temario,detalle,tarjetas,estadisticas,tests,ajustes}[view]||inicio)();}
+function render(){ montarNavegacionInferior(); $('#nav').innerHTML=pages.map(([id,t])=>`<button class="${view===id||(view==='detalle'&&id==='temario')?'active':''}" data-go="${id}">${t}</button>`).join('');$('#heading').textContent=view==='detalle'?`Tema ${topicId}`:pages.find(x=>x[0]===view)?.[1].replace(/^[^ ]+ /,'')||'Inicio';const cuenta=document.getElementById('opoplan-auth');const aparcamiento=document.getElementById('opoplan-auth-parking');if(cuenta&&aparcamiento)aparcamiento.appendChild(cuenta);$('#app').innerHTML=({inicio,calendario,temario,detalle,tarjetas,estadisticas,tests,ajustes}[view]||inicio)();if(view==='ajustes'&&cuenta){const lugar=document.getElementById('opoplan-account-slot');if(lugar)lugar.appendChild(cuenta);}}
+window.opoplanOpenSettings=()=>go('ajustes');
 
 function montarNavegacionInferior(){
  if(!document.getElementById('op-bottom-style')){
@@ -598,7 +599,7 @@ function ajustes(){
      <strong>${valor}</strong>
    </div>`;
 
- return `
+ return `<div class="card"><h2>Cuenta y sincronización</h2><div id="opoplan-account-slot"></div></div>
  <div class="card">
    <h2>Copias de seguridad</h2>
    <p class="muted">Protege tus datos de estudio guardando una copia periódicamente.</p>
