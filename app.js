@@ -323,9 +323,114 @@ function tarjetas(){
      'No hay tarjetas pendientes en este tema. Puedes elegir «Todas» para seguir practicando.'}</p>`}
   </div>`;
 }
-function calendarTopics(date){return [...new Set(db.sesiones.filter(s=>dateLocal(s.fecha)===date).map(s=>s.temaNumero))].sort((a,b)=>a-b)}function categoryColor(name){let c=db.categorias.find(c=>c.nombre===name);return /^([0-9a-f]{6})$/i.test(c?.colorHex||'')?'#'+c.colorHex:'#81978a'}
-function calendario(){let first=new Date(year,month,1),offset=(first.getDay()+6)%7,days=new Date(year,month+1,0).getDate(),cells=[];for(let i=0;i<offset;i++)cells.push('<div class="day-spacer"></div>');for(let d=1;d<=days;d++){let day=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,ev=db.eventos.filter(e=>dateLocal(e.fecha)===day),ts=calendarTopics(day);cells.push(`<button class="day ${day===today()?'today':''} ${day===selectedDate?'selected':''}" data-date="${day}"><b>${d}</b>${ts.map(n=>`<small class="calendar-chip study-chip" style="--chip:${colorTema(n)};background:${colorTema(n)}22;color:${colorTema(n)};border:1px solid ${colorTema(n)}55">Tema ${n}</small>`).join('')}${ev.slice(0,3).map(e=>`<small class="calendar-chip" style="--chip:${categoryColor(e.categoriaNombre)};background:${categoryColor(e.categoriaNombre)}22;color:#243041;border:1px solid ${categoryColor(e.categoriaNombre)}55">${esc(e.titulo)}</small>`).join('')}${ev.length>3?`<small class="more-events">+${ev.length-3} más</small>`:''}</button>`)}let ev=db.eventos.filter(e=>dateLocal(e.fecha)===selectedDate),ts=calendarTopics(selectedDate);return `<div class="card op-calendar-main"><div class="row op-calendar-month"><button class="secondary" id="prevMonth">‹</button><h2>${new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric'}).format(first)}</h2><button class="secondary" id="nextMonth">›</button></div><div class="category-legend">${db.categorias.map(c=>`<span class="legend-item"><i style="background:${categoryColor(c.nombre)}"></i>${esc(c.nombre)}</span>`).join('')}</div><div class="calendar">${['L','M','X','J','V','S','D'].map(x=>`<div class="weekday">${x}</div>`).join('')}${cells.join('')}</div></div><div class="card op-calendar-detail"><h2 class="op-calendar-date">${new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long'}).format(new Date(`${selectedDate}T12:00:00`))}</h2>${ts.map(n=>`<div class="event-entry study-entry" style="--chip:${colorTema(n)};border-left:5px solid ${colorTema(n)};background:${colorTema(n)}1C"><b>Tema ${n}${topic(n)?.titulo?' · '+esc(topic(n).titulo):''}</b><span class="muted">Registro automático de estudio</span></div>`).join('')}${ev.map(e=>`<div class="event-entry" style="--chip:${categoryColor(e.categoriaNombre)};border-left:5px solid ${categoryColor(e.categoriaNombre)};background:${categoryColor(e.categoriaNombre)}1C"><div><b>${esc(e.titulo)}</b><div class="muted">${esc(e.categoriaNombre)} ${e.notas?'· '+esc(e.notas):''}</div></div><div class="actions"><button class="secondary" data-edit-event="${esc(e.id)}">Editar</button><button class="danger" data-del-event="${esc(e.id)}">Eliminar</button></div></div>`).join('')||(!ts.length?'<p class="muted">Sin registros para este día</p>':'')}<h3 id="eventFormHeading">Nuevo evento manual</h3><input id="eventEditId" type="hidden"><label>Título</label><input id="eventTitle" placeholder="Ej. Test de inglés"><div class="fields"><div><label>Categoría</label><select id="eventCat">${db.categorias.map(c=>`<option>${esc(c.nombre)}</option>`).join('')}</select></div><div><label>Fecha</label><input id="eventDate" type="date" value="${selectedDate}"></div></div><label>Notas</label><textarea id="eventNotes"></textarea><button class="primary" id="addEvent">Guardar evento</button></div><div class="card"><h2>Categorías personalizadas</h2><p class="muted">Cada categoría tiene su propio color. Puedes modificarlo cuando quieras.</p>${db.categorias.map(c=>`<div class="category-editor"><input aria-label="Color de ${esc(c.nombre)}" type="color" value="${categoryColor(c.nombre)}" data-cat-color="${esc(c.nombre)}"><span>${esc(c.nombre)}</span><button class="danger" data-del-cat="${esc(c.nombre)}">Eliminar</button></div>`).join('')}<div class="fields"><div><label>Nueva categoría</label><input id="catName" placeholder="Nombre"></div><div><label>Color</label><input id="catColor" type="color" value="#34835b"></div></div><button class="primary" id="addCat">Crear categoría</button></div>`}
+function calendarTopics(date){
+ return [...new Set(db.sesiones
+  .filter(s=>dateLocal(s.fecha)===date)
+  .map(s=>s.temaNumero))].sort((a,b)=>a-b);
+}
 
+function categoryColor(name){
+ let c=db.categorias.find(c=>c.nombre===name);
+ return /^([0-9a-f]{6})$/i.test(c?.colorHex||'')?'#'+c.colorHex:'#81978a';
+}
+
+function eventColor(e){
+ return topic(Number(e.temaNumero))?
+  colorTema(Number(e.temaNumero)):categoryColor(e.categoriaNombre);
+}
+
+function calendario(){
+ let first=new Date(year,month,1);
+ let offset=(first.getDay()+6)%7;
+ let days=new Date(year,month+1,0).getDate();
+ let cells=[];
+ for(let i=0;i<offset;i++)cells.push('<div class="day-spacer"></div>');
+ for(let d=1;d<=days;d++){
+  let day=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  let ev=db.eventos.filter(e=>dateLocal(e.fecha)===day);
+  let ts=calendarTopics(day);
+  cells.push(`
+   <button class="day ${day===today()?'today':''} ${day===selectedDate?'selected':''}" data-date="${day}">
+    <b>${d}</b>
+    ${ts.map(n=>`<small class="calendar-chip study-chip" style="--chip:${colorTema(n)};background:${colorTema(n)}22;color:${colorTema(n)};border:1px solid ${colorTema(n)}55">Tema ${n}</small>`).join('')}
+    ${ev.slice(0,3).map(e=>`<small class="calendar-chip" style="--chip:${eventColor(e)};background:${eventColor(e)}22;color:#243041;border:1px solid ${eventColor(e)}55">${esc(e.titulo)}</small>`).join('')}
+    ${ev.length>3?`<small class="more-events">+${ev.length-3} más</small>`:''}
+   </button>`);
+ }
+ let ev=db.eventos.filter(e=>dateLocal(e.fecha)===selectedDate);
+ let ts=calendarTopics(selectedDate);
+ return `
+  <div class="card op-calendar-main">
+   <div class="row op-calendar-month">
+    <button class="secondary" id="prevMonth">‹</button>
+    <h2>${new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric'}).format(first)}</h2>
+    <button class="secondary" id="nextMonth">›</button>
+   </div>
+   <div class="category-legend">
+    ${db.categorias.map(c=>`<span class="legend-item"><i style="background:${categoryColor(c.nombre)}"></i>${esc(c.nombre)}</span>`).join('')}
+   </div>
+   <div class="calendar">
+    ${['L','M','X','J','V','S','D'].map(x=>`<div class="weekday">${x}</div>`).join('')}
+    ${cells.join('')}
+   </div>
+  </div>
+  <div class="card op-calendar-detail">
+   <h2 class="op-calendar-date">${new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long'}).format(new Date(`${selectedDate}T12:00:00`))}</h2>
+   ${ts.map(n=>`
+    <div class="event-entry study-entry" style="--chip:${colorTema(n)};border-left:5px solid ${colorTema(n)};background:${colorTema(n)}1C">
+     <b>Tema ${n}${topic(n)?.titulo?' · '+esc(topic(n).titulo):''}</b>
+     <span class="muted">Registro automático de estudio</span>
+    </div>`).join('')}
+   ${ev.map(e=>`
+    <div class="event-entry" style="--chip:${eventColor(e)};border-left:5px solid ${eventColor(e)};background:${eventColor(e)}1C">
+     <div>
+      <b>${esc(e.titulo)}</b>
+      <div class="muted">${esc(e.categoriaNombre)} ${e.notas?'· '+esc(e.notas):''}</div>
+     </div>
+     <div class="actions">
+      <button class="secondary" data-edit-event="${esc(e.id)}">Editar</button>
+      <button class="danger" data-del-event="${esc(e.id)}">Eliminar</button>
+     </div>
+    </div>`).join('')||(!ts.length?'<p class="muted">Sin registros para este día</p>':'')}
+   <h3 id="eventFormHeading">Nuevo evento manual</h3>
+   <input id="eventEditId" type="hidden">
+   <label>Título</label>
+   <input id="eventTitle" placeholder="Ej. Estudiar el tema 1">
+   <div class="fields">
+    <div>
+     <label>Categoría</label>
+     <select id="eventCat">${db.categorias.map(c=>`<option>${esc(c.nombre)}</option>`).join('')}</select>
+    </div>
+    <div>
+     <label>Fecha</label>
+     <input id="eventDate" type="date" value="${selectedDate}">
+    </div>
+   </div>
+   <label>Tema de estudio (opcional)</label>
+   <select id="eventTopic">
+    <option value="">Sin tema: usar color de la categoría</option>
+    ${db.temas.map(t=>`<option value="${t.numero}">Tema ${t.numero} · ${esc(t.titulo)}</option>`).join('')}
+   </select>
+   <label>Notas</label>
+   <textarea id="eventNotes"></textarea>
+   <button class="primary" id="addEvent">Guardar evento</button>
+  </div>
+  <div class="card">
+   <h2>Categorías personalizadas</h2>
+   <p class="muted">Cada categoría tiene su propio color. Puedes modificarlo cuando quieras.</p>
+   ${db.categorias.map(c=>`
+    <div class="category-editor">
+     <input aria-label="Color de ${esc(c.nombre)}" type="color" value="${categoryColor(c.nombre)}" data-cat-color="${esc(c.nombre)}">
+     <span>${esc(c.nombre)}</span>
+     <button class="danger" data-del-cat="${esc(c.nombre)}">Eliminar</button>
+    </div>`).join('')}
+   <div class="fields">
+    <div><label>Nueva categoría</label><input id="catName" placeholder="Nombre"></div>
+    <div><label>Color</label><input id="catColor" type="color" value="#34835b"></div>
+   </div>
+   <button class="primary" id="addCat">Crear categoría</button>
+  </div>`;
+}
 /* OPOPLAN: PREGUNTAS TIPO TEST */
 let opExam = null;
 let opEdit = null;
@@ -717,7 +822,9 @@ function ensureIds(){
   t.notas ||= '';
   t.estado ||= 'sinEmpezar';
  });
-}function delegate(e){let b=e.target.closest('button');if(b?.dataset.repaso){let t=topic(b.dataset.repaso);if(!t)return;let n=Math.max(0,Math.floor(Number(t.repasos)||0));t.repasos=Math.max(0,n+Number(b.dataset.cambio));save();render();return;}if(b?.dataset.go){go(b.dataset.go);return}if(b?.dataset.topic){setTopic(b.dataset.topic);return}if(b?.dataset.deck){deckTopic=+b.dataset.deck;cardIndex=0;showAnswer=false;render();return}if(b?.dataset.deckMode){deckMode=b.dataset.deckMode;cardIndex=0;showAnswer=false;render();return}if(b?.dataset.editEvent){let e=db.eventos.find(x=>x.id===b.dataset.editEvent);if(e){$('#eventEditId').value=e.id;$('#eventTitle').value=e.titulo;$('#eventDate').value=dateLocal(e.fecha);$('#eventCat').value=e.categoriaNombre;$('#eventNotes').value=e.notas||'';$('#eventFormHeading').textContent='Editar evento';$('#eventTitle').focus()}return}if(b?.dataset.date){selectedDate=b.dataset.date;render();return}if(b?.dataset.delSession){if(confirm('¿Eliminar esta sesión?')){db.sesiones=db.sesiones.filter(s=>s.id!==b.dataset.delSession);save();render()}return}if(b?.dataset.delEvent){if(confirm('¿Eliminar este evento?')){db.eventos=db.eventos.filter(s=>s.id!==b.dataset.delEvent);save();render()}return}if(b?.dataset.delCat){let name=b.dataset.delCat;if(db.eventos.some(x=>x.categoriaNombre===name))return notify('La categoría tiene eventos; no se puede eliminar');db.categorias=db.categorias.filter(x=>x.nombre!==name);save();render();return}if(b?.dataset.delTest){db.simulacros=db.simulacros.filter(s=>s.id!==b.dataset.delTest);save();render();return}if(b?.dataset.delCard!==undefined){topic(topicId).fichas.splice(+b.dataset.delCard,1);save();render();return}if(b?.dataset.rate){let t=topic(deckTopic),arr=deckCards(t),f=arr[cardIndex];if(!f)return;let d=new Date();d.setDate(d.getDate()+Number(b.dataset.rate));f.proximoRepaso=d.toLocaleDateString('sv-SE');f.ultimoRepaso=today();f.ultimoResultado=b.dataset.rate==='1'?'fallada':b.dataset.rate==='3'?'regular':'facil';save();showAnswer=false;cardIndex=0;render();return}switch(b?.id){case 'saveTopic':{let t=topic(topicId);t.estado=$('#estado').value;t.notas=$('#notas').value;save();notify('Tema guardado');break}case 'addSession':addSession(+$(' #studyMins'.trim()).value,$('#studyDate').value,$('#studyNotes').value);break;case 'addCard':{let q=$('#question').value.trim(),a=$('#answer').value.trim();if(!q||!a)return notify('Escribe pregunta y respuesta');topic(topicId).fichas.push({pregunta:q,respuesta:a});save();render();notify('Tarjeta añadida');break}case 'startTimer':if(timer.topic!==topicId){timer={topic:topicId,phase:'study',left:3000,running:false,last:0,elapsed:0}}timer.running=true;timer.last=Date.now();updateClock();break;case 'pauseTimer':tick();timer.running=false;break;case 'resetTimer':if(timer.elapsed&&!confirm('¿Descartar tiempo no guardado?'))return;timer={topic:topicId,phase:'study',left:3000,running:false,last:0,elapsed:0};updateClock();break;case 'finishTimer':tick();timer.running=false;if(timer.elapsed>0){let n=Math.max(1,Math.round(timer.elapsed/60));let t=timer.topic||topicId;topicId=t;addSession(n,today(),'Pomodoro');}timer={topic:topicId,phase:'study',left:3000,running:false,last:0,elapsed:0};updateClock();break;case 'flipCard':showAnswer=!showAnswer;render();break;case 'reveal':showAnswer=true;render();break;case 'nextCard':cardIndex=(cardIndex+1)%Math.max(1,deckCards(topic(deckTopic)).length);showAnswer=false;render();break;case 'prevCard':cardIndex=Math.max(0,cardIndex-1);showAnswer=false;render();break;case 'backDecks':deckTopic=null;cardIndex=0;showAnswer=false;render();break;case 'prevMonth':month--;if(month<0){month=11;year--}render();break;case 'nextMonth':month++;if(month>11){month=0;year++}render();break;case 'addEvent':{let title=$('#eventTitle').value.trim();if(!title)return notify('Escribe un título');let dt=$('#eventDate').value;let existing=db.eventos.find(e=>e.id===$('#eventEditId').value);let data={titulo:title,fecha:new Date(`${dt}T12:00:00`).toISOString(),categoriaNombre:$('#eventCat').value,notas:$('#eventNotes').value,diaCompleto:true};if(existing)Object.assign(existing,data);else db.eventos.push({id:uid(),...data});selectedDate=dt;save();render();break}case 'addCat':{let n=$('#catName').value.trim();if(!n||db.categorias.some(c=>c.nombre===n))return notify('Nombre vacío o repetido');db.categorias.push({nombre:n,colorHex:$('#catColor').value.slice(1).toUpperCase(),icono:'calendar',orden:db.categorias.length});save();render();break}case 'addTest':{let total=+$(' #testTotal'.trim()).value,aciertos=+$(' #testOk'.trim()).value,errores=+$(' #testBad'.trim()).value,blanco=+$(' #testBlank'.trim()).value;if([total,aciertos,errores,blanco].some(n=>n<0)||total!==aciertos+errores+blanco)return notify('Las respuestas deben sumar el total');db.simulacros.unshift({id:uid(),nombre:$('#testName').value.trim()||'Test',fecha:$('#testDate').value,total,aciertos,errores,blanco,notas:$('#testNotes').value});save();render();break}case 'export':download();break}}
+}function delegate(e){let b=e.target.closest('button');if(b?.dataset.repaso){let t=topic(b.dataset.repaso);if(!t)return;let n=Math.max(0,Math.floor(Number(t.repasos)||0));t.repasos=Math.max(0,n+Number(b.dataset.cambio));save();render();return;}if(b?.dataset.go){go(b.dataset.go);return}if(b?.dataset.topic){setTopic(b.dataset.topic);return}if(b?.dataset.deck){deckTopic=+b.dataset.deck;cardIndex=0;showAnswer=false;render();return}if(b?.dataset.deckMode){deckMode=b.dataset.deckMode;cardIndex=0;showAnswer=false;render();return}if(b?.dataset.editEvent){let e=db.eventos.find(x=>x.id===b.dataset.editEvent);if(e){$('#eventEditId').value=e.id;$('#eventTitle').value=e.titulo;$('#eventDate').value=dateLocal(e.fecha);$('#eventCat').value=e.categoriaNombre;
+$('#eventTopic').value=e.temaNumero||'';$('#eventNotes').value=e.notas||'';$('#eventFormHeading').textContent='Editar evento';$('#eventTitle').focus()}return}if(b?.dataset.date){selectedDate=b.dataset.date;render();return}if(b?.dataset.delSession){if(confirm('¿Eliminar esta sesión?')){db.sesiones=db.sesiones.filter(s=>s.id!==b.dataset.delSession);save();render()}return}if(b?.dataset.delEvent){if(confirm('¿Eliminar este evento?')){db.eventos=db.eventos.filter(s=>s.id!==b.dataset.delEvent);save();render()}return}if(b?.dataset.delCat){let name=b.dataset.delCat;if(db.eventos.some(x=>x.categoriaNombre===name))return notify('La categoría tiene eventos; no se puede eliminar');db.categorias=db.categorias.filter(x=>x.nombre!==name);save();render();return}if(b?.dataset.delTest){db.simulacros=db.simulacros.filter(s=>s.id!==b.dataset.delTest);save();render();return}if(b?.dataset.delCard!==undefined){topic(topicId).fichas.splice(+b.dataset.delCard,1);save();render();return}if(b?.dataset.rate){let t=topic(deckTopic),arr=deckCards(t),f=arr[cardIndex];if(!f)return;let d=new Date();d.setDate(d.getDate()+Number(b.dataset.rate));f.proximoRepaso=d.toLocaleDateString('sv-SE');f.ultimoRepaso=today();f.ultimoResultado=b.dataset.rate==='1'?'fallada':b.dataset.rate==='3'?'regular':'facil';save();showAnswer=false;cardIndex=0;render();return}switch(b?.id){case 'saveTopic':{let t=topic(topicId);t.estado=$('#estado').value;t.notas=$('#notas').value;save();notify('Tema guardado');break}case 'addSession':addSession(+$(' #studyMins'.trim()).value,$('#studyDate').value,$('#studyNotes').value);break;case 'addCard':{let q=$('#question').value.trim(),a=$('#answer').value.trim();if(!q||!a)return notify('Escribe pregunta y respuesta');topic(topicId).fichas.push({pregunta:q,respuesta:a});save();render();notify('Tarjeta añadida');break}case 'startTimer':if(timer.topic!==topicId){timer={topic:topicId,phase:'study',left:3000,running:false,last:0,elapsed:0}}timer.running=true;timer.last=Date.now();updateClock();break;case 'pauseTimer':tick();timer.running=false;break;case 'resetTimer':if(timer.elapsed&&!confirm('¿Descartar tiempo no guardado?'))return;timer={topic:topicId,phase:'study',left:3000,running:false,last:0,elapsed:0};updateClock();break;case 'finishTimer':tick();timer.running=false;if(timer.elapsed>0){let n=Math.max(1,Math.round(timer.elapsed/60));let t=timer.topic||topicId;topicId=t;addSession(n,today(),'Pomodoro');}timer={topic:topicId,phase:'study',left:3000,running:false,last:0,elapsed:0};updateClock();break;case 'flipCard':showAnswer=!showAnswer;render();break;case 'reveal':showAnswer=true;render();break;case 'nextCard':cardIndex=(cardIndex+1)%Math.max(1,deckCards(topic(deckTopic)).length);showAnswer=false;render();break;case 'prevCard':cardIndex=Math.max(0,cardIndex-1);showAnswer=false;render();break;case 'backDecks':deckTopic=null;cardIndex=0;showAnswer=false;render();break;case 'prevMonth':month--;if(month<0){month=11;year--}render();break;case 'nextMonth':month++;if(month>11){month=0;year++}render();break;case 'addEvent':{let title=$('#eventTitle').value.trim();if(!title)return notify('Escribe un título');let dt=$('#eventDate').value;let existing=db.eventos.find(e=>e.id===$('#eventEditId').value);let data={titulo:title,fecha:new Date(`${dt}T12:00:00`).toISOString(),categoriaNombre:$('#eventCat').value,
+temaNumero:$('#eventTopic').value?Number($('#eventTopic').value):null,notas:$('#eventNotes').value,diaCompleto:true};if(existing)Object.assign(existing,data);else db.eventos.push({id:uid(),...data});selectedDate=dt;save();render();break}case 'addCat':{let n=$('#catName').value.trim();if(!n||db.categorias.some(c=>c.nombre===n))return notify('Nombre vacío o repetido');db.categorias.push({nombre:n,colorHex:$('#catColor').value.slice(1).toUpperCase(),icono:'calendar',orden:db.categorias.length});save();render();break}case 'addTest':{let total=+$(' #testTotal'.trim()).value,aciertos=+$(' #testOk'.trim()).value,errores=+$(' #testBad'.trim()).value,blanco=+$(' #testBlank'.trim()).value;if([total,aciertos,errores,blanco].some(n=>n<0)||total!==aciertos+errores+blanco)return notify('Las respuestas deben sumar el total');db.simulacros.unshift({id:uid(),nombre:$('#testName').value.trim()||'Test',fecha:$('#testDate').value,total,aciertos,errores,blanco,notas:$('#testNotes').value});save();render();break}case 'export':download();break}}
 document.addEventListener('click',delegate);
 document.addEventListener('change',async e=>{
  if(e.target.dataset.catColor){
