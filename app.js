@@ -5,7 +5,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>
 const COLORES_TEMAS=["#2563EB", "#F97316", "#16A34A", "#EC4899", "#EAB308", "#4F46E5", "#DC2626", "#06B6D4", "#92400E", "#A855F7", "#0F766E", "#BE123C", "#84CC16", "#0284C7", "#9333EA", "#475569", "#14B8A6"];
 function colorTema(n){return COLORES_TEMAS[Number(n)-1]||'#64748B'}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));window.dispatchEvent(new Event('opoplan-local-change'))}function go(v){view=v;render()}function setTopic(n){topicId=+n;view='detalle';render()}
-const pages=[['inicio','⌂ Inicio'],['calendario','▦ Calendario'],['temario','▤ Temario'],['tarjetas','▣ Tarjetas'],['estadisticas','◫ Estadísticas'],['tests','✓ Tests y simulacros'],['ajustes','⚙ Ajustes']];
+const pages=[['inicio','⌂ Inicio'],['calendario','▦ Calendario'],['temario','▤ Temario'],['tarjetas','▣ Tarjetas'],['estadisticas','◫ Estadísticas'],['ajustes','⚙ Ajustes']];
 function render(){ montarNavegacionInferior(); $('#nav').innerHTML=pages.map(([id,t])=>`<button class="${view===id||(view==='detalle'&&id==='temario')?'active':''}" data-go="${id}">${t}</button>`).join('');$('#heading').textContent=view==='detalle'?`Tema ${topicId}`:pages.find(x=>x[0]===view)?.[1].replace(/^[^ ]+ /,'')||'Inicio';const cuenta=document.getElementById('opoplan-auth');const aparcamiento=document.getElementById('opoplan-auth-parking');if(cuenta&&aparcamiento)aparcamiento.appendChild(cuenta);$('#app').innerHTML=({inicio,calendario,temario,detalle,tarjetas,estadisticas,tests,ajustes}[view]||inicio)();if(view==='ajustes'&&cuenta){const lugar=document.getElementById('opoplan-account-slot');if(lugar)lugar.appendChild(cuenta);}}
 window.opoplanOpenSettings=()=>go('ajustes');
 
@@ -248,12 +248,80 @@ function temario(){
 }
 function detalle(){let t=topic(topicId),sessions=db.sesiones.filter(s=>s.temaNumero===topicId).sort((a,b)=>b.fecha.localeCompare(a.fecha));return `<div class="card"><h2>${esc(t.titulo)}</h2><label>Estado</label><select id="estado"><option value="sinEmpezar" ${t.estado==='sinEmpezar'?'selected':''}>Sin empezar</option><option value="enProgreso" ${t.estado==='enProgreso'?'selected':''}>En progreso</option><option value="dominado" ${t.estado==='dominado'?'selected':''}>Dominado</option></select><label>Notas del tema</label><textarea id="notas">${esc(t.notas)}</textarea><div class="actions"><button class="primary" id="saveTopic">Guardar tema</button><button class="secondary" data-go="temario">Volver</button></div></div><div class="card"><h2>Pomodoro 50 / 10</h2><p class="muted">El tiempo de descanso no se contabiliza. Mantén esta pestaña abierta durante la sesión.</p><div class="center"><span id="phase" class="pill">Estudio</span><div id="clock" class="timer">50:00</div><div class="actions" style="justify-content:center"><button class="primary" id="startTimer">Iniciar / reanudar</button><button class="secondary" id="pauseTimer">Pausar</button><button class="secondary" id="finishTimer">Guardar tiempo y terminar</button><button class="secondary" id="resetTimer">Reiniciar</button></div></div></div><div class="card"><h2>Añadir sesión manual</h2><div class="fields"><div><label>Fecha</label><input id="studyDate" type="date" value="${today()}"></div><div><label>Minutos de estudio</label><input id="studyMins" type="number" min="0" value="50"></div></div><label>Notas de la sesión</label><textarea id="studyNotes" placeholder="Qué has estudiado"></textarea><button class="primary" id="addSession">Guardar sesión</button></div><div class="card"><h2>Historial de estudio</h2>${sessions.map(s=>`<div class="listline row"><div>${esc(dateLocal(s.fecha))} · ${fmt(+s.duracion||0)}<div class="muted">${esc(s.notas)}</div></div><button class="danger" data-del-session="${esc(s.id)}">Eliminar</button></div>`).join('')||'<p class="muted">Sin sesiones</p>'}</div><div class="card"><h2>Tarjetas (${t.fichas.length})</h2>${t.fichas.map((f,i)=>`<div class="listline"><b>${esc(f.pregunta)}</b><p>${esc(f.respuesta)}</p><button class="danger" data-del-card="${i}">Eliminar</button></div>`).join('')}<label>Pregunta</label><textarea id="question"></textarea><label>Respuesta</label><textarea id="answer"></textarea><button class="primary" id="addCard">Añadir tarjeta</button></div>`}
 let timer={topic:null,phase:'study',left:3000,running:false,last:0,elapsed:0};function tick(){if(!timer.running)return;let now=Date.now(),delta=Math.floor((now-timer.last)/1000);if(delta<1)return;timer.last+=delta*1000;while(delta>0){let n=Math.min(delta,timer.left);timer.left-=n;if(timer.phase==='study')timer.elapsed+=n;delta-=n;if(timer.left<=0){timer.phase=timer.phase==='study'?'break':'study';timer.left=timer.phase==='study'?3000:600;notify(timer.phase==='break'?'Estudio terminado. Descanso de 10 minutos':'Descanso terminado. Vuelve a estudiar')}}updateClock()}function updateClock(){let c=$('#clock');if(c)c.textContent=`${String(Math.floor(timer.left/60)).padStart(2,'0')}:${String(timer.left%60).padStart(2,'0')}`;let p=$('#phase');if(p)p.textContent=timer.phase==='study'?'Estudio':'Descanso'}setInterval(tick,500);
-function upcoming(){let now=today();return db.temas.flatMap(t=>t.fichas.filter(f=>!f.proximoRepaso||f.proximoRepaso<=now).map(f=>({t,f})))}function tarjetas(){
+function upcoming(){
+ return db.temas.flatMap(t=>t.fichas
+  .filter(f=>!f.proximoRepaso||f.proximoRepaso<=today())
+  .map(f=>({t,f})));
+}
+
+function deckCards(t,mode=deckMode){
+ return t.fichas.filter(f=>{
+  if(mode==='failed')return f.ultimoResultado==='fallada';
+  if(mode==='due')return !f.proximoRepaso||f.proximoRepaso<=today();
+  return true;
+ });
+}
+
+function tarjetas(){
  const selected=deckTopic===null?null:topic(deckTopic);
- if(!selected)return `<div class="card"><h2>Elige un tema para estudiar</h2><p class="muted">Cada tema tiene sus propias tarjetas. Puedes estudiar todas o solo las pendientes de repaso.</p><div class="deck-grid">${db.temas.map(t=>`<button class="deck-tile" data-deck="${t.numero}"><span class="deck-num" style="background:${colorTema(t.numero)}!important;border-color:${colorTema(t.numero)}">${String(t.numero).padStart(2,'0')}</span><strong>${esc(t.titulo)}</strong><span class="muted">${t.fichas.length} tarjetas · ${t.fichas.filter(f=>!f.proximoRepaso||f.proximoRepaso<=today()).length} pendientes</span><span class="deck-arrow">Abrir tema →</span></button>`).join('')}</div></div>`;
- const all=selected.fichas.map((f,i)=>({f,i}));const list=deckMode==='due'?all.filter(({f})=>!f.proximoRepaso||f.proximoRepaso<=today()):all;
- cardIndex=Math.max(0,Math.min(cardIndex,list.length-1));let current=list[cardIndex];
- return `<div class="card"><div class="row"><button class="secondary" id="backDecks">← Todos los temas</button><span class="pill" style="border-color:${colorTema(selected.numero)};border-left:5px solid ${colorTema(selected.numero)}">Tema ${selected.numero}</span></div><h2>${esc(selected.titulo)}</h2><div class="actions"><button class="${deckMode==='all'?'primary':'secondary'}" data-deck-mode="all">Todas (${all.length})</button><button class="${deckMode==='due'?'primary':'secondary'}" data-deck-mode="due">Pendientes (${all.filter(({f})=>!f.proximoRepaso||f.proximoRepaso<=today()).length})</button><button class="secondary" data-topic="${selected.numero}">Crear / editar tarjetas</button></div>${current?`<p class="muted">Tarjeta ${cardIndex+1} de ${list.length}</p><button type="button" id="flipCard" class="op-flip-card ${showAnswer?'op-flip-answer':'op-flip-question'}" style="--deck-color:${colorTema(selected.numero)}" aria-label="${showAnswer?'Volver a la pregunta':'Mostrar respuesta'}"><span class="op-flip-label">${showAnswer?'RESPUESTA':'PREGUNTA'}</span><span class="op-flip-content">${showAnswer?esc(current.f.respuesta):esc(current.f.pregunta)}</span><span class="op-flip-hint">↻ Toca para girar</span></button>${showAnswer?`<div class="actions"><button class="secondary" data-rate="1">Fallé · mañana</button><button class="secondary" data-rate="3">Regular · 3 días</button><button class="primary" data-rate="7">Fácil · 7 días</button></div>`:`<button class="primary" id="reveal">Mostrar respuesta</button>`}<div class="actions"><button class="secondary" id="prevCard">← Anterior</button><button class="secondary" id="nextCard">Siguiente →</button></div>`:`<p class="notice">${all.length?'No hay tarjetas pendientes en este tema. Puedes elegir «Todas» para seguir practicando.':'Este tema todavía no tiene tarjetas. Puedes crearlas desde el detalle del tema.'}</p>`}</div>`;
+ if(!selected)return `
+  <div class="card">
+   <h2>Elige un tema para estudiar</h2>
+   <p class="muted">Puedes estudiar todas las tarjetas, las pendientes o las falladas de cada tema.</p>
+   <div class="deck-grid">
+    ${db.temas.map(t=>`
+     <button class="deck-tile" data-deck="${t.numero}">
+      <span class="deck-num" style="background:${colorTema(t.numero)}!important;border-color:${colorTema(t.numero)}">${String(t.numero).padStart(2,'0')}</span>
+      <strong>${esc(t.titulo)}</strong>
+      <span class="muted">${t.fichas.length} tarjetas · ${deckCards(t,'due').length} pendientes · ${deckCards(t,'failed').length} falladas</span>
+      <span class="deck-arrow">Abrir tema →</span>
+     </button>
+    `).join('')}
+   </div>
+  </div>`;
+
+ const all=selected.fichas;
+ const list=deckCards(selected);
+ cardIndex=Math.max(0,Math.min(cardIndex,list.length-1));
+ const current=list[cardIndex];
+
+ return `
+  <div class="card">
+   <div class="row">
+    <button class="secondary" id="backDecks">← Todos los temas</button>
+    <span class="pill" style="border-color:${colorTema(selected.numero)};border-left:5px solid ${colorTema(selected.numero)}">Tema ${selected.numero}</span>
+   </div>
+   <h2>${esc(selected.titulo)}</h2>
+   <div class="actions">
+    <button class="${deckMode==='all'?'primary':'secondary'}" data-deck-mode="all">Todas (${all.length})</button>
+    <button class="${deckMode==='due'?'primary':'secondary'}" data-deck-mode="due">Pendientes (${deckCards(selected,'due').length})</button>
+    <button class="${deckMode==='failed'?'primary':'secondary'}" data-deck-mode="failed">Falladas (${deckCards(selected,'failed').length})</button>
+    <button class="secondary" data-topic="${selected.numero}">Crear / editar tarjetas</button>
+   </div>
+   ${current?`
+    <p class="muted">Tarjeta ${cardIndex+1} de ${list.length}</p>
+    <button type="button" id="flipCard" class="op-flip-card ${showAnswer?'op-flip-answer':'op-flip-question'}" style="--deck-color:${colorTema(selected.numero)}" aria-label="${showAnswer?'Volver a la pregunta':'Mostrar respuesta'}">
+     <span class="op-flip-label">${showAnswer?'RESPUESTA':'PREGUNTA'}</span>
+     <span class="op-flip-content">${showAnswer?esc(current.respuesta):esc(current.pregunta)}</span>
+     <span class="op-flip-hint">↻ Toca para girar</span>
+    </button>
+    ${showAnswer?`
+     <div class="actions">
+      <button class="secondary" data-rate="1">Fallé · mañana</button>
+      <button class="secondary" data-rate="3">Regular · 3 días</button>
+      <button class="primary" data-rate="7">Fácil · 7 días</button>
+     </div>`:
+     '<button class="primary" id="reveal">Mostrar respuesta</button>'}
+    <div class="actions">
+     <button class="secondary" id="prevCard">← Anterior</button>
+     <button class="secondary" id="nextCard">Siguiente →</button>
+    </div>`:`
+    <p class="notice">${!all.length?
+     'Este tema todavía no tiene tarjetas. Puedes crearlas desde el detalle del tema.':
+     deckMode==='failed'?
+     'No hay tarjetas marcadas como falladas en este tema.':
+     'No hay tarjetas pendientes en este tema. Puedes elegir «Todas» para seguir practicando.'}</p>`}
+  </div>`;
 }
 function calendarTopics(date){return [...new Set(db.sesiones.filter(s=>dateLocal(s.fecha)===date).map(s=>s.temaNumero))].sort((a,b)=>a-b)}function categoryColor(name){let c=db.categorias.find(c=>c.nombre===name);return /^([0-9a-f]{6})$/i.test(c?.colorHex||'')?'#'+c.colorHex:'#81978a'}
 function calendario(){let first=new Date(year,month,1),offset=(first.getDay()+6)%7,days=new Date(year,month+1,0).getDate(),cells=[];for(let i=0;i<offset;i++)cells.push('<div class="day-spacer"></div>');for(let d=1;d<=days;d++){let day=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,ev=db.eventos.filter(e=>dateLocal(e.fecha)===day),ts=calendarTopics(day);cells.push(`<button class="day ${day===today()?'today':''} ${day===selectedDate?'selected':''}" data-date="${day}"><b>${d}</b>${ts.map(n=>`<small class="calendar-chip study-chip" style="--chip:${colorTema(n)};background:${colorTema(n)}22;color:${colorTema(n)};border:1px solid ${colorTema(n)}55">Tema ${n}</small>`).join('')}${ev.slice(0,3).map(e=>`<small class="calendar-chip" style="--chip:${categoryColor(e.categoriaNombre)};background:${categoryColor(e.categoriaNombre)}22;color:#243041;border:1px solid ${categoryColor(e.categoriaNombre)}55">${esc(e.titulo)}</small>`).join('')}${ev.length>3?`<small class="more-events">+${ev.length-3} más</small>`:''}</button>`)}let ev=db.eventos.filter(e=>dateLocal(e.fecha)===selectedDate),ts=calendarTopics(selectedDate);return `<div class="card op-calendar-main"><div class="row op-calendar-month"><button class="secondary" id="prevMonth">‹</button><h2>${new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric'}).format(first)}</h2><button class="secondary" id="nextMonth">›</button></div><div class="category-legend">${db.categorias.map(c=>`<span class="legend-item"><i style="background:${categoryColor(c.nombre)}"></i>${esc(c.nombre)}</span>`).join('')}</div><div class="calendar">${['L','M','X','J','V','S','D'].map(x=>`<div class="weekday">${x}</div>`).join('')}${cells.join('')}</div></div><div class="card op-calendar-detail"><h2 class="op-calendar-date">${new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long'}).format(new Date(`${selectedDate}T12:00:00`))}</h2>${ts.map(n=>`<div class="event-entry study-entry" style="--chip:${colorTema(n)};border-left:5px solid ${colorTema(n)};background:${colorTema(n)}1C"><b>Tema ${n}${topic(n)?.titulo?' · '+esc(topic(n).titulo):''}</b><span class="muted">Registro automático de estudio</span></div>`).join('')}${ev.map(e=>`<div class="event-entry" style="--chip:${categoryColor(e.categoriaNombre)};border-left:5px solid ${categoryColor(e.categoriaNombre)};background:${categoryColor(e.categoriaNombre)}1C"><div><b>${esc(e.titulo)}</b><div class="muted">${esc(e.categoriaNombre)} ${e.notas?'· '+esc(e.notas):''}</div></div><div class="actions"><button class="secondary" data-edit-event="${esc(e.id)}">Editar</button><button class="danger" data-del-event="${esc(e.id)}">Eliminar</button></div></div>`).join('')||(!ts.length?'<p class="muted">Sin registros para este día</p>':'')}<h3 id="eventFormHeading">Nuevo evento manual</h3><input id="eventEditId" type="hidden"><label>Título</label><input id="eventTitle" placeholder="Ej. Test de inglés"><div class="fields"><div><label>Categoría</label><select id="eventCat">${db.categorias.map(c=>`<option>${esc(c.nombre)}</option>`).join('')}</select></div><div><label>Fecha</label><input id="eventDate" type="date" value="${selectedDate}"></div></div><label>Notas</label><textarea id="eventNotes"></textarea><button class="primary" id="addEvent">Guardar evento</button></div><div class="card"><h2>Categorías personalizadas</h2><p class="muted">Cada categoría tiene su propio color. Puedes modificarlo cuando quieras.</p>${db.categorias.map(c=>`<div class="category-editor"><input aria-label="Color de ${esc(c.nombre)}" type="color" value="${categoryColor(c.nombre)}" data-cat-color="${esc(c.nombre)}"><span>${esc(c.nombre)}</span><button class="danger" data-del-cat="${esc(c.nombre)}">Eliminar</button></div>`).join('')}<div class="fields"><div><label>Nueva categoría</label><input id="catName" placeholder="Nombre"></div><div><label>Color</label><input id="catColor" type="color" value="#34835b"></div></div><button class="primary" id="addCat">Crear categoría</button></div>`}
