@@ -113,7 +113,14 @@ else try{
  register.onclick=async()=>{setBusy(true);const {data,error}=await sb.auth.signUp({email:email.value.trim(),password:password.value});status(error?error.message:data.session?'Cuenta creada.':'Comprueba tu correo para confirmar la cuenta.',error?'error':'');setBusy(false);};
  logout.onclick=async()=>{setBusy(true);const {error}=await sb.auth.signOut();if(error)status(error.message,'error');setBusy(false);};
  check.onclick=()=>synchronize();useCloud.onclick=()=>choose('cloud');useLocal.onclick=()=>choose('local');
- window.addEventListener('opoplan-local-change',()=>{if(applyingCloud||!user||mode==='conflict')return;needsRetry=working||needsRetry;clearTimeout(pendingTimer);pendingTimer=setTimeout(synchronize,1500);});
- window.addEventListener('opoplan-ready',()=>synchronize());window.addEventListener('online',()=>synchronize());window.addEventListener('focus',()=>{if(!working)synchronize();});
+window.addEventListener('opoplan-local-change',()=>{
+ if(applyingCloud||!user||mode==='conflict')return;
+ status(navigator.onLine?
+  'Cambios pendientes.':
+  'Cambios pendientes. Sin conexión.');
+ needsRetry=working||needsRetry;
+ clearTimeout(pendingTimer);
+ pendingTimer=setTimeout(synchronize,1500);
+}); window.addEventListener('opoplan-ready',()=>synchronize());window.addEventListener('online',()=>synchronize());window.addEventListener('focus',()=>{if(!working)synchronize();});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!working)synchronize();});setInterval(()=>{if(!document.hidden)synchronize();},20000);
 }catch(err){status('No se pudo iniciar Supabase: '+err.message,'error');}
