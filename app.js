@@ -172,9 +172,6 @@ function countCards(){return db.temas.reduce((a,t)=>a+t.fichas.length,0)}functio
 
 
 function inicio(){
- const dominados=db.temas.filter(t=>t.estado==='dominado').length;
- const estudiados=db.temas.filter(t=>t.estado!=='sinEmpezar').length;
- const testsHechos=db.simulacros.length;
  const proximos=db.eventos.filter(e=>dateLocal(e.fecha)>=today())
   .sort((a,b)=>dateLocal(a.fecha).localeCompare(dateLocal(b.fecha)))
   .slice(0,3);
@@ -183,7 +180,6 @@ function inicio(){
  <header class="op-home-header">
    <div class="op-hero-inner">
      <div class="op-insignia">
-       
        <div>
          <div class="op-name">OpoPlan</div>
          <span class="op-cabo">CABO</span>
@@ -195,42 +191,6 @@ function inicio(){
  <section class="op-hero" aria-label="Fotografía de cabecera"></section>
 
  <section class="op-home-panel">
-   <h2>Hoy, tu plan</h2>
-
-   <button class="op-action" data-go="temario">
-     <span class="op-action-icon">▤</span>
-     <span><strong>Estudiar</strong>
-       <small>Elige un tema y registra tu estudio</small></span>
-     <span class="op-chevron">›</span>
-   </button>
-
-   <button class="op-action op-home-review" data-go="tarjetas">
-     <span class="op-action-icon">▣</span>
-     <span><strong>Repasar tarjetas</strong>
-       <small>${countCards()} tarjetas creadas</small></span>
-     <span class="op-chevron">›</span>
-   </button>
-
-   <button class="op-action" data-go="tests">
-     <span class="op-action-icon">◎</span>
-     <span><strong>Test / Simulacro</strong>
-       <small>Registra tus resultados</small></span>
-     <span class="op-chevron">›</span>
-   </button>
-
-   <div class="op-evolution">
-     <h3>Tu evolución</h3>
-     <div class="op-stats">
-       <div><strong>${dominados}</strong><small>Temas dominados</small></div>
-       <div><strong>${estudiados} / 17</strong><small>Temas iniciados</small></div>
-       <div><strong>${testsHechos}</strong><small>Tests registrados</small></div>
-     </div>
-   </div>
-
-   <button class="op-pomodoro" data-go="temario">
-     ▶ &nbsp; Elegir tema e iniciar Pomodoro (50/10)
-   </button>
-
    <div class="op-upcoming">
      <div class="row">
        <h3>Próximos eventos</h3>
