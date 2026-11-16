@@ -56,7 +56,7 @@ async function synchronize(){
   if(localStr===localBaseline){
    // A save may have happened while the cloud request was in flight. Never overwrite it.
    if(normalize(local())!==localStr){needsRetry=true;return;}
-   backup(here,'antes_de_recibir_nube');applyCloud(remote.datos);await saveBase(remote.datos,remote.actualizado_en,c,local());mode='ready';status('Cambios de la nube recibidos. Sincronización activa.');return;}
+   applyCloud(remote.datos);await saveBase(remote.datos,remote.actualizado_en,c,local());mode='ready';status('Cambios de la nube recibidos. Sincronización activa.');return;}
   if(cloudStr!==baseline){resolveConflict('Se han modificado datos en dos dispositivos:');return;}
   // Compare-and-swap atomically on the server: never overwrite newer remote data.
   if(normalize(local())!==localStr){needsRetry=true;return;}
