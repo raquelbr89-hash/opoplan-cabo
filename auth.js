@@ -11,8 +11,26 @@ const add=(tag,label,type)=>{const e=document.createElement(tag);if(tag==='butto
 const email=add('input','Correo electrónico','email');const password=add('input','Contraseña','password');password.autocomplete='current-password';email.autocomplete='email';
 const login=add('button','Entrar');const register=add('button','Crear cuenta');const logout=add('button','Cerrar sesión');const check=add('button','Sincronizar ahora');const useCloud=add('button','Usar copia de la nube');const useLocal=add('button','Enviar copia de este dispositivo');
 const buttons=[login,register,logout,check,useCloud,useLocal];
-const status=(s,kind='')=>{msg.textContent=s;msg.className=kind?'auth-'+kind:'';};
-const setBusy=v=>buttons.forEach(b=>b.disabled=v);
+const status=(s,kind='')=>{
+ const confirmados=[
+  'Datos iguales en este dispositivo y la nube. Sincronización automática activa.',
+  'Sincronizado. Los datos están actualizados.',
+  'Cambios de la nube recibidos. Sincronización activa.',
+  'Cambios guardados en Supabase. Sincronización automática activa.',
+  'Copia elegida y sincronizada. Se ha descargado un respaldo de la copia sustituida.'
+ ];
+ if(confirmados.includes(s)){
+  s='Sincronizado.';
+ }else if(s==='Cuenta conectada. Comprobando sincronización…'){
+  s='Comprobando sincronización…';
+ }else if(s.startsWith('Sincronización pendiente: ')){
+  s='Cambios pendientes. '+s.slice('Sincronización pendiente: '.length);
+ }else if(s.includes('Hay datos distintos en este dispositivo y en la nube.')){
+  s='Necesita revisión. Hay dos copias distintas. Elige cuál conservar. Se solicitará descargar un respaldo antes de sustituirla.';
+ }
+ msg.textContent=s;
+ msg.className=kind?'auth-'+kind:'';
+};const setBusy=v=>buttons.forEach(b=>b.disabled=v);
 const normalize=v=>JSON.stringify(v,(_,x)=>x && !Array.isArray(x) && typeof x==='object'?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 const local=()=>{const raw=localStorage.getItem(KEY);return raw?JSON.parse(raw):null;};
 const valid=d=>d&&Array.isArray(d.temas)&&d.temas.length===17&&Array.isArray(d.sesiones)&&Array.isArray(d.eventos)&&Array.isArray(d.categorias);
